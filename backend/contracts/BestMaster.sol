@@ -3,7 +3,7 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./BestProject.sol";
 import "hardhat/console.sol";
 
@@ -13,13 +13,26 @@ contract BestMaster is AccessControl {
     bytes32 public constant SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
-    IERC20 public tetherToken;
+    uint projectPrice = 30; // TO REMOVE AND PUT IN CONSTRUCTOR
+    address usdtContractAddress = address(0x81f6D0417aCCaFEabf107Bd28c078702C44D7863); // TO REMOVE AND PUT IN CONSTRUCTOR
+    ERC20 public tetherToken;
 
-    constructor(address _usdtContractAddress) {
+    constructor() { // ARGS are : (address _usdtContractAddress, uint _projectPrice)
+       
         _grantRole(SUPER_ADMIN_ROLE, msg.sender);
+        // JUST TO TEST IN REMIX, REMOVE AFTER
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(OPERATOR_ROLE, msg.sender);
+        // END OF TEST IN REMIX 
         _setRoleAdmin(DEFAULT_ADMIN_ROLE, SUPER_ADMIN_ROLE);
         _setRoleAdmin(SUPER_ADMIN_ROLE, SUPER_ADMIN_ROLE);
-        tetherToken = ERC20(_usdtContractAddress);
+        // Variable initialization
+        
+        // UNCOMMENT NEXT TO LINES
+        //projectPrice=_projectPrice;
+        //usdtContractAddress=_usdtContractAddress;
+        tetherToken = ERC20(usdtContractAddress);
+        
       
     }
 
@@ -27,6 +40,10 @@ contract BestMaster is AccessControl {
         require(!hasRole(BLACKLIST_ROLE, msg.sender), "User Blacklisted");
         _;
     }
+    function setProjectPrice(uint _projectPrice) external{
+        projectPrice=_projectPrice;
+    }
+
 
     function createProject(
         uint256 _initialSupply,
@@ -36,6 +53,8 @@ contract BestMaster is AccessControl {
         uint256 _bestMarckup,
         string calldata _desc_link
     ) external onlyRole(OPERATOR_ROLE) notBlacklist {
+       (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),projectPrice));
+       require(success,"Project price hasn't been paid");
         BestProject project = new BestProject(
             _initialSupply,
             _fundingDeadline,
