@@ -8,7 +8,7 @@ const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "";
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL ||"";
 
 module.exports = {
-  solidity: "0.8.24",
+  solidity: "0.4.17",
   networks: {
     holesky: {
       url: HOLESKY_RPC_URL,
@@ -36,6 +36,9 @@ module.exports = {
     compilers: [
       {
         version: "0.8.24",
+      },
+      {
+        version: "0.4.17",
       },
     ],
   },
