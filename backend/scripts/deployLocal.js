@@ -3,14 +3,13 @@ const hre = require("hardhat");
 
 async function main() {
 
-    const localUSDT = await hre.ethers.deployContract("TetherToken");
+    const localUSDT = await hre.ethers.deployContract("contracts/external/LocalUSDT.sol:TetherToken");
     await localUSDT.waitForDeployment();
     console.log(`TetherToken deployed to ${localUSDT.target}`);
 
     const BestMaster = await ethers.getContractFactory("BestMaster");
     const bestMaster = await BestMaster.deploy(localUSDT.target);
     console.log(`BestMaster deployed to ${bestMaster.target}`);
-
 
 }
 

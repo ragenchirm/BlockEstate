@@ -3,20 +3,24 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./BestProject.sol";
+import "hardhat/console.sol";
+
 
 contract BestMaster is AccessControl {
     address[] public bestProjectsAddresses;
     bytes32 public constant SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
+    IERC20 public tetherToken;
 
-    constructor(address _usdtContactAddress) {
+    constructor(address _usdtContractAddress) {
         _grantRole(SUPER_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(DEFAULT_ADMIN_ROLE, SUPER_ADMIN_ROLE);
         _setRoleAdmin(SUPER_ADMIN_ROLE, SUPER_ADMIN_ROLE);
+        tetherToken = ERC20(_usdtContractAddress);
+      
     }
 
     modifier notBlacklist() {
