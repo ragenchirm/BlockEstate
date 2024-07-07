@@ -7,15 +7,16 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
 import "./BestProject.sol";
 
-error UserBlacklistedError(address _address);
-
 contract BestMaster is AccessControl {
     address[] public bestProjectsAddresses;
+    bytes32 public constant SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
 
     constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(SUPER_ADMIN_ROLE, msg.sender);
+        _setRoleAdmin(DEFAULT_ADMIN_ROLE, SUPER_ADMIN_ROLE);
+        _setRoleAdmin(SUPER_ADMIN_ROLE, SUPER_ADMIN_ROLE);
     }
 
     modifier notBlacklist() {
@@ -30,7 +31,7 @@ contract BestMaster is AccessControl {
         uint256 _interestRate,
         uint256 _bestMarckup,
         string calldata _desc_link
-    ) external onlyRole(OPERATOR_ROLE) notBlacklist() {
+    ) external onlyRole(OPERATOR_ROLE) notBlacklist {
         BestProject project = new BestProject(
             _initialSupply,
             _fundingDeadline,
@@ -40,9 +41,6 @@ contract BestMaster is AccessControl {
             _desc_link
         );
         bestProjectsAddresses.push(address(project));
-        console.log("start create project");
-        console.log(address(project));
-        console.log("end create project");
     }
 
     function renounceRole(bytes32 role, address callerConfirmation)

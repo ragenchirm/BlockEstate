@@ -1,7 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
 require("dotenv").config();
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
+const SEPOLIA_HOLESKY_PRIVATE_KEY = process.env.SEPOLIA_HOLESKY_PRIVATE_KEY || "";
 const HOLESKY_RPC_URL = process.env.HOLESKY_RPC_URL || "";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "";
@@ -13,12 +13,12 @@ module.exports = {
     holesky: {
       url: HOLESKY_RPC_URL,
       chainId: 17000,
-      accounts: [`0x${PRIVATE_KEY}`]
+      accounts: [`0x${SEPOLIA_HOLESKY_PRIVATE_KEY}`]
     },
     sepolia: {
       url: SEPOLIA_RPC_URL,
       chainId: 11155111,
-      accounts: [`0x${PRIVATE_KEY}`]
+      accounts: [`0x${SEPOLIA_HOLESKY_PRIVATE_KEY}`]
     },
     hardhat: { //To fork maintnet
       forking: {

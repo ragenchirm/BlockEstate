@@ -5,6 +5,8 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
 
+
+
 contract BestProject is ERC20 {
     enum ProjectStatus {
         Crowdfunding,
@@ -35,6 +37,9 @@ contract BestProject is ERC20 {
         interestRate = _interestRate;
         bestMarckup = _bestMarckup;
         desc_link = _desc_link;
+        console.log("NOUVEAU PROJEEEEEET");
+        console.log(msg.sender);
+        console.log("FIN NOUVEAU PROJEEEEEET");
     }
 
     receive() external payable {
