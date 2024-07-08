@@ -15,12 +15,11 @@ contract BestProject is ERC20 {
         InProgress,
         Finished
     }
-    uint256 public rate = 1;
     uint256 public initialSupply;
     uint256 public fundingDeadline;
     uint256 public projectDeadline;
     uint256 public interestRate;
-    uint256 public bestMarckup;
+    uint256 public bestFee;
     string public desc_link;
 
     constructor(
@@ -28,14 +27,14 @@ contract BestProject is ERC20 {
         uint256 _fundingDeadline,
         uint256 _projectDeadline,
         uint256 _interestRate,
-        uint256 _bestMarckup,
+        uint256 _bestFee,
         string memory _desc_link
-    ) ERC20("Project Debt", "BEP") {
+    ) ERC20("Block Estate Token", "BEST") {
         _mint(msg.sender, _initialSupply);
         fundingDeadline = _fundingDeadline;
         projectDeadline = _projectDeadline;
         interestRate = _interestRate;
-        bestMarckup = _bestMarckup;
+        bestFee = _bestFee;
         desc_link = _desc_link;
         console.log("NOUVEAU PROJEEEEEET");
         console.log(msg.sender);
@@ -48,7 +47,7 @@ contract BestProject is ERC20 {
     }
 
     function distribute(uint256 _amount) internal {
-        uint256 tokensToSend = _amount * rate;
+        uint256 tokensToSend = _amount;
         transfer(msg.sender, tokensToSend);
     }
 }
