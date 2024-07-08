@@ -14,20 +14,20 @@ contract BestMaster is AccessControl {
     bytes32 constant SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
     bytes32 constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
-    uint public projectPrice; 
+    uint public projectPriceInDollars; 
     uint public bestFee;
     address public usdtContractAddress;
     ERC20 public tetherToken;
 
-    constructor() { // ARGS are : (address _usdtContractAddress, uint _projectPrice, uint _bestFee)
+    constructor() { // ARGS are : (address _usdtContractAddress, uint _projectPriceInDollars, uint _bestFee)
         withdrawalAddress=msg.sender;
         _grantRole(SUPER_ADMIN_ROLE, msg.sender);
         // JUST TO TEST IN REMIX, REMOVE AFTER
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(OPERATOR_ROLE, msg.sender);
         bestFee=5;
-        projectPrice = 30;
-        usdtContractAddress = address(0x81f6D0417aCCaFEabf107Bd28c078702C44D7863);
+        projectPriceInDollars = 30;
+        usdtContractAddress = address(0x0ff3726ff76AFdAD513885F49F1601A8E4bB75f7);
         // END OF TEST IN REMIX 
         _setRoleAdmin(DEFAULT_ADMIN_ROLE, SUPER_ADMIN_ROLE);
         _setRoleAdmin(SUPER_ADMIN_ROLE, SUPER_ADMIN_ROLE);
@@ -35,20 +35,21 @@ contract BestMaster is AccessControl {
         
         // UNCOMMENT NEXT LINES
         //bestFee=_bestFee;
-        //projectPrice=_projectPrice;
+        //projectPriceInDollars=_projectPriceInDollars;
         //usdtContractAddress=_usdtContractAddress;
         tetherToken = ERC20(usdtContractAddress);
     }
 
+    //MODIFIERS
     modifier notBlacklist() {
         require(!hasRole(BLACKLIST_ROLE, msg.sender), "User Blacklisted");
         _;
     }
 
-    function setProjectPrice(uint _projectPrice) external{
-        projectPrice=_projectPrice;
+    function setProjectPriceInDollars(uint _projectPriceInDollars) external{
+        projectPriceInDollars=_projectPriceInDollars;
     }
-
+    //FUNCTIONS
     function withdraw(uint _amount)external onlyRole(SUPER_ADMIN_ROLE){
         require( _amount <= tetherToken.balanceOf(address(this)),"Not enougth funds");
         (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transfer(address,uint256)", withdrawalAddress,_amount));
@@ -75,9 +76,12 @@ contract BestMaster is AccessControl {
         uint256 _interestRate,
         string calldata _desc_link
     ) external onlyRole(OPERATOR_ROLE) notBlacklist {
-       (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),projectPrice));
+        uint projectPriceSixDecimals = projectPriceInDollars*1000000;
+       (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),projectPriceSixDecimals));
        require(success,"Project price hasn't been paid");
         BestProject project = new BestProject(
+            msg.sender,
+            usdtContractAddress,
             _initialSupply,
             _fundingDeadline,
             _projectDeadline,
@@ -88,20 +92,38 @@ contract BestMaster is AccessControl {
         bestProjectsAddresses.push(address(project));
     }
 
+    // Overriden functions
     function renounceRole(bytes32 role, address callerConfirmation)
         public
         virtual
         override
     {
-        require(role != BLACKLIST_ROLE, "Can't renounce Blacklist role");
         if (callerConfirmation != _msgSender()) {
             revert AccessControlBadConfirmation();
         }
+        require(role != BLACKLIST_ROLE, "Can't renounce Blacklist role"); 
+        // Safety stop, a super admin can't renounce it's superadmin role, so the contract always has one
+        require(role != SUPER_ADMIN_ROLE, "Can't renounce Super Admin role"); 
+        
 
         _revokeRole(role, callerConfirmation);
     }
 
-    receive() external payable {}
+     function revokeRole(bytes32 role, address account)
+        public
+        virtual
+        override
+        onlyRole(getRoleAdmin(role))
+    {
+        // Safety stop, a super admin can't revoke it's own superadmin role, so the contract always has one
+        require(
+            !(role == SUPER_ADMIN_ROLE && account == msg.sender),
+            "Can't self revoke Super Admin role"
+        );
+        _revokeRole(role, account);
+    }
 
+// receive and fallback cause we never know
+    receive() external payable {}
     fallback() external payable {}
 }

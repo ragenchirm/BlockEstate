@@ -393,13 +393,13 @@ contract TetherToken is Pausable, StandardToken, BlackList {
         //###############################################################
         //################## Locally Added ##############################
         //###############################################################
-        uint256 tenMillions = 10000000;
-        uint256 hundredMillions = 100000000;
+        uint256 tenMillions = 10000000000000; //ten million dollards = 10*10^6*(*10^6 because 6 decimals)
+        uint256 hundredMillions = 100000000000000; //hundred million dollards = 100*10^6(*10^6 because 6 decimals)
 
         // This part is added to deploy the contract locally without filling constructor arguments by hand
         // In original USDT contract, _initialSupply, _name, _symbol, _decimals are arguments passed to the funciton TetherToken which is the constructor of the contract
         // In order to save time when deploying the contract locally, we removed the arguments from constructor and we initiate those variable with hard values directly inside the constructor
-        uint256 _initialSupply = 900000000; //initial supply of 10^9USDT
+        uint256 _initialSupply = 900000000000000; //initial supply of 10^9 USDT = 10^9*10^6 because 6 decimals
         string memory _name = "Tether USD";
         string memory _symbol = "USDT";
         uint256 _decimals = 6;
