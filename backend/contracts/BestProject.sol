@@ -80,24 +80,24 @@ contract BestProject is ERC20, AccessControl {
     }
 
 //Functions 
-    function investInProject(uint _amountInDollars) isProjectStatus(ProjectStatus.Crowdfunding) notBlacklist notToMuch(_amountInDollars) external {
-        (bool success, bytes memory data) = transferUsdtToContract(_amountInDollars);
+    function investInProject(uint _amount) isProjectStatus(ProjectStatus.Crowdfunding) notBlacklist notToMuch(_amount) external {
+        (bool success, bytes memory data) = transferUsdtToContract(_amount);
         if(success){
-            _transfer(address(this), msg.sender, _amountInDollars);
-            emit SomeoneInvested(msg.sender, _amountInDollars);
+            _transfer(address(this), msg.sender, _amount);
+            emit SomeoneInvested(msg.sender, _amount);
         }else{
-            revert USDTTransferError(msg.sender, address(this),convertInUSDT(_amountInDollars));
+            revert USDTTransferError(msg.sender, address(this),convertInUSDT(_amount));
         }
     }
 
-      function askForARefund(uint _amountInDollars) isOneOfProjectStatus(ProjectStatus.Crowdfunding, ProjectStatus.Canceled) notBlacklist external {
-        require(balanceOf(msg.sender) >=_amountInDollars,"You don't have enough funds");
-        (bool success, bytes memory data) = transferUsdtToUser(_amountInDollars);
+      function askForARefund(uint _amount) isOneOfProjectStatus(ProjectStatus.Crowdfunding, ProjectStatus.Canceled) notBlacklist external {
+        require(balanceOf(msg.sender) >=_amount,"You don't have enough funds");
+        (bool success, bytes memory data) = transferUsdtToUser(_amount);
         if(success){
-             _transfer(msg.sender, address(this), _amountInDollars);
-        emit SomeoneAskedForARefund(msg.sender, _amountInDollars);
+             _transfer(msg.sender, address(this), _amount);
+        emit SomeoneAskedForARefund(msg.sender, _amount);
         }else{
-            revert USDTTransferError( address(this), msg.sender ,convertInUSDT(_amountInDollars));
+            revert USDTTransferError( address(this), msg.sender ,convertInUSDT(_amount));
         }   
     }
 
@@ -107,17 +107,17 @@ contract BestProject is ERC20, AccessControl {
         emit ProjectStatusChange(uint(ProjectStatus.Crowdfunding), uint(ProjectStatus.ProjectLaunched));
     }
 
-     function adminWithdraw(uint _amountInDollars) onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectLaunched) external {
-        (bool success, bytes memory data) = transferUsdtToUser(_amountInDollars);
+     function adminWithdraw(uint _amount) onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectLaunched) external {
+        (bool success, bytes memory data) = transferUsdtToUser(_amount);
         if(success){
-            emit FundsWithdrawalByAdmin(msg.sender, _amountInDollars);
+            emit FundsWithdrawalByAdmin(msg.sender, _amount);
         }else{
-            revert USDTTransferError(address(this),msg.sender,convertInUSDT(_amountInDollars));
+            revert USDTTransferError(address(this),msg.sender,convertInUSDT(_amount));
         }
     }
 
-    function adminDeposit(uint _amountInDollars) onlyRole (DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectLaunched) external{
-        (bool success, bytes memory data) = transferUsdtToContract(_amountInDollars);
+    function adminDeposit(uint _amount) onlyRole (DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectLaunched) external{
+        (bool success, bytes memory data) = transferUsdtToContract(_amount);
     }
 
     // INTERNAL FUNCTIONS
