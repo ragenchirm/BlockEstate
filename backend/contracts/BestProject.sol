@@ -12,23 +12,23 @@ error USDTTransferError(address _from, address _to, uint _amount);
 contract BestProject is ERC20, AccessControl {
     event SomeoneInvested(address _investor, uint _amountInDollars);
     event SomeoneAskedForARefund(address _investor, uint _amountInDollars);
-    event ProjectStatusChanged(uint _from, uint _to);
+    event ProjectStatusChange(uint _from, uint _to);
+    event FundsWithdrawalByAdmin(address _operator, uint _amountInDollars);
+    
 
     enum ProjectStatus {
         Crowdfunding,
         Canceled,
-        ProjectFunded,
-        ProjectInProgress,
+        ProjectLaunched,
         ProjectFinished
     }
 
-    ProjectStatus projectStatus;
-    mapping (address => uint) public preFundedBalances; 
+    ProjectStatus public projectStatus;
     address public usdtContractAddress;
-    uint256 public fundingDeadline;
     uint256 public projectDeadline;
     uint256 public interestRate;
     uint256 public bestFee;
+    uint public projectLaunchDate;
     string public desc_link;
 
     bytes32 constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
@@ -37,7 +37,6 @@ contract BestProject is ERC20, AccessControl {
         address _firstOperator,
         address _usdtContractAddress,
         uint256 _initialSupply,
-        uint256 _fundingDeadline,
         uint256 _projectDeadline,
         uint256 _interestRate,
         uint256 _bestFee,
@@ -46,7 +45,6 @@ contract BestProject is ERC20, AccessControl {
     ) ERC20(_projectName, "BEST") {
         // Variable initialisation
         usdtContractAddress = _usdtContractAddress;
-        fundingDeadline = _fundingDeadline;
         projectDeadline = _projectDeadline;
         interestRate = _interestRate;
         bestFee = _bestFee;
@@ -83,7 +81,7 @@ contract BestProject is ERC20, AccessControl {
 
 //Functions 
     function investInProject(uint _amountInDollars) isProjectStatus(ProjectStatus.Crowdfunding) notBlacklist notToMuch(_amountInDollars) external {
-        (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),convertInUSDT(_amountInDollars)));
+        (bool success, bytes memory data) = transferUsdtToContract(_amountInDollars);
         if(success){
             _transfer(address(this), msg.sender, _amountInDollars);
             emit SomeoneInvested(msg.sender, _amountInDollars);
@@ -94,7 +92,7 @@ contract BestProject is ERC20, AccessControl {
 
       function askForARefund(uint _amountInDollars) isOneOfProjectStatus(ProjectStatus.Crowdfunding, ProjectStatus.Canceled) notBlacklist external {
         require(balanceOf(msg.sender) >=_amountInDollars,"You don't have enough funds");
-        (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transfer(address,uint256)", msg.sender, convertInUSDT(_amountInDollars)));
+        (bool success, bytes memory data) = transferUsdtToUser(_amountInDollars);
         if(success){
              _transfer(msg.sender, address(this), _amountInDollars);
         emit SomeoneAskedForARefund(msg.sender, _amountInDollars);
@@ -105,19 +103,35 @@ contract BestProject is ERC20, AccessControl {
 
     function launchProject() onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.Crowdfunding) external {
         require(alreadyFunded()==totalSupply(),"Project not funded yet");
-        projectStatus = ProjectStatus.ProjectFunded;
+        projectStatus = ProjectStatus.ProjectLaunched;
+        emit ProjectStatusChange(uint(ProjectStatus.Crowdfunding), uint(ProjectStatus.ProjectLaunched));
     }
 
-     function adminWithdraw() onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectFunded) external {
-        projectStatus = ProjectStatus.ProjectInProgress;
+     function adminWithdraw(uint _amountInDollars) onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectLaunched) external {
+        (bool success, bytes memory data) = transferUsdtToUser(_amountInDollars);
+        if(success){
+            emit FundsWithdrawalByAdmin(msg.sender, _amountInDollars);
+        }else{
+            revert USDTTransferError(address(this),msg.sender,convertInUSDT(_amountInDollars));
+        }
+    }
+
+    function adminDeposit(uint _amountInDollars) onlyRole (DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectLaunched) external{
+        (bool success, bytes memory data) = transferUsdtToContract(_amountInDollars);
     }
 
     // INTERNAL FUNCTIONS
     function convertInUSDT(uint _amountInDollars) internal pure returns(uint){
-        return _amountInDollars*1000000;
+        return _amountInDollars*1;
     }
     function alreadyFunded() internal view returns(uint) {
         return totalSupply() - balanceOf(address(this));
+    }
+    function transferUsdtToContract(uint _amountInDollars) internal returns(bool, bytes memory){
+        return usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),convertInUSDT(_amountInDollars)));
+    }
+     function transferUsdtToUser(uint _amountInDollars) internal returns(bool, bytes memory){
+        return usdtContractAddress.call(abi.encodeWithSignature("transfer(address,uint256)", msg.sender, convertInUSDT(_amountInDollars)));
     }
 
 
@@ -148,7 +162,7 @@ contract BestProject is ERC20, AccessControl {
     }
     // 1 token = 1$
     function decimals() public view virtual override returns (uint8)   {
-        return 0;
+        return 6;
     }
 
     // EXEMPLE FUNCITONS
