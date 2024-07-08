@@ -6,9 +6,11 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "hardhat/console.sol";
 
+error WrongProjectStatusError(uint _actualStatusActual, uint _necessaryProjectStatus);
+
 contract BestProject is ERC20, AccessControl {
     event SomeoneInvested(address _investor, uint _amountInDollars);
-    event SomeoneAskedARefund(address _investor, uint _amountInDollars);
+    event SomeoneAskedForARefund(address _investor, uint _amountInDollars);
 
     enum ProjectStatus {
         Crowdfunding,
@@ -63,8 +65,10 @@ contract BestProject is ERC20, AccessControl {
         _;
     }
     
-    modifier isProjectStatus(ProjectStatus _projectStatus){
-        require(projectStatus==_projectStatus,"Amount is too much");
+    modifier isProjectStatus(ProjectStatus _necessaryProjectStatus){
+        if(projectStatus !=_necessaryProjectStatus){
+            revert WrongProjectStatusError(uint(projectStatus),uint(_necessaryProjectStatus));
+        }
         _;
     }
 
@@ -87,7 +91,7 @@ contract BestProject is ERC20, AccessControl {
         require(success, "Contract coud not be funded");
         alreadyFunded -=_amountInDollars;
         preFundedBalances[msg.sender] -=_amountInDollars;
-        emit SomeoneAskedARefund(msg.sender, _amountInDollars);
+        emit SomeoneAskedForARefund(msg.sender, _amountInDollars);
     }
 
 
