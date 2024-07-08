@@ -74,7 +74,8 @@ contract BestMaster is AccessControl {
         uint256 _fundingDeadline,
         uint256 _projectDeadline,
         uint256 _interestRate,
-        string calldata _desc_link
+        string calldata _desc_link,
+        string calldata _projectName
     ) external onlyRole(OPERATOR_ROLE) notBlacklist {
         uint projectPriceSixDecimals = projectPriceInDollars*1000000;
        (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),projectPriceSixDecimals));
@@ -87,7 +88,8 @@ contract BestMaster is AccessControl {
             _projectDeadline,
             _interestRate,
             bestFee,
-            _desc_link
+            _desc_link,
+            _projectName
         );
         bestProjectsAddresses.push(address(project));
     }

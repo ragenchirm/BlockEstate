@@ -6,19 +6,22 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "hardhat/console.sol";
 
-error WrongProjectStatusError(uint _actualStatusActual, uint _necessaryProjectStatus);
+error WrongProjectStatusError(uint _actualStatusActual);
+error USDTTransferError(address _from, address _to, uint _amount);
 
 contract BestProject is ERC20, AccessControl {
     event SomeoneInvested(address _investor, uint _amountInDollars);
     event SomeoneAskedForARefund(address _investor, uint _amountInDollars);
+    event ProjectStatusChanged(uint _from, uint _to);
 
     enum ProjectStatus {
         Crowdfunding,
         Canceled,
-        Funded,
-        InProgress,
-        Finished
+        ProjectFunded,
+        ProjectInProgress,
+        ProjectFinished
     }
+
     ProjectStatus projectStatus;
     mapping (address => uint) public preFundedBalances; 
     address public usdtContractAddress;
@@ -26,7 +29,6 @@ contract BestProject is ERC20, AccessControl {
     uint256 public projectDeadline;
     uint256 public interestRate;
     uint256 public bestFee;
-    uint256 public alreadyFunded;
     string public desc_link;
 
     bytes32 constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
@@ -39,8 +41,9 @@ contract BestProject is ERC20, AccessControl {
         uint256 _projectDeadline,
         uint256 _interestRate,
         uint256 _bestFee,
-        string memory _desc_link
-    ) ERC20("Block Estate Token", "BEST") {
+        string memory _desc_link,
+        string memory _projectName
+    ) ERC20(_projectName, "BEST") {
         // Variable initialisation
         usdtContractAddress = _usdtContractAddress;
         fundingDeadline = _fundingDeadline;
@@ -61,38 +64,62 @@ contract BestProject is ERC20, AccessControl {
     }
 
     modifier notToMuch(uint _amount){
-        require(totalSupply()-alreadyFunded >= _amount,"Amount is too much");
+        require(balanceOf(address(this)) >= _amount,"Amount is too much");
         _;
     }
     
     modifier isProjectStatus(ProjectStatus _necessaryProjectStatus){
         if(projectStatus !=_necessaryProjectStatus){
-            revert WrongProjectStatusError(uint(projectStatus),uint(_necessaryProjectStatus));
+            revert WrongProjectStatusError(uint(projectStatus));
+        }
+        _;
+    }
+    modifier isOneOfProjectStatus(ProjectStatus _necessaryProjectStatus1, ProjectStatus _necessaryProjectStatus2){
+        if(projectStatus !=_necessaryProjectStatus1 && projectStatus !=_necessaryProjectStatus2){
+            revert WrongProjectStatusError(uint(projectStatus));
         }
         _;
     }
 
 //Functions 
     function investInProject(uint _amountInDollars) isProjectStatus(ProjectStatus.Crowdfunding) notBlacklist notToMuch(_amountInDollars) external {
-        uint realAmount = _amountInDollars*1000000;
-        (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),realAmount));
-        
-        require(success, "Contract coud not be funded");
-        alreadyFunded +=_amountInDollars;
-        preFundedBalances[msg.sender] +=_amountInDollars;
-        emit SomeoneInvested(msg.sender, _amountInDollars);
+        (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),convertInUSDT(_amountInDollars)));
+        if(success){
+            _transfer(address(this), msg.sender, _amountInDollars);
+            emit SomeoneInvested(msg.sender, _amountInDollars);
+        }else{
+            revert USDTTransferError(msg.sender, address(this),convertInUSDT(_amountInDollars));
+        }
     }
 
-      function askForRefund(uint _amountInDollars) isProjectStatus(ProjectStatus.Crowdfunding) notBlacklist external {
-        require(preFundedBalances[msg.sender]>=_amountInDollars,"You don't have enough funds");
-        uint realAmount = _amountInDollars*1000000;
-        (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transfer(address,uint256)", msg.sender, realAmount));
-        
-        require(success, "Contract coud not be funded");
-        alreadyFunded -=_amountInDollars;
-        preFundedBalances[msg.sender] -=_amountInDollars;
+      function askForARefund(uint _amountInDollars) isOneOfProjectStatus(ProjectStatus.Crowdfunding, ProjectStatus.Canceled) notBlacklist external {
+        require(balanceOf(msg.sender) >=_amountInDollars,"You don't have enough funds");
+        (bool success, bytes memory data) = usdtContractAddress.call(abi.encodeWithSignature("transfer(address,uint256)", msg.sender, convertInUSDT(_amountInDollars)));
+        if(success){
+             _transfer(msg.sender, address(this), _amountInDollars);
         emit SomeoneAskedForARefund(msg.sender, _amountInDollars);
+        }else{
+            revert USDTTransferError( address(this), msg.sender ,convertInUSDT(_amountInDollars));
+        }   
     }
+
+    function launchProject() onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.Crowdfunding) external {
+        require(alreadyFunded()==totalSupply(),"Project not funded yet");
+        projectStatus = ProjectStatus.ProjectFunded;
+    }
+
+     function adminWithdraw() onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectFunded) external {
+        projectStatus = ProjectStatus.ProjectInProgress;
+    }
+
+    // INTERNAL FUNCTIONS
+    function convertInUSDT(uint _amountInDollars) internal pure returns(uint){
+        return _amountInDollars*1000000;
+    }
+    function alreadyFunded() internal view returns(uint) {
+        return totalSupply() - balanceOf(address(this));
+    }
+
 
 
     //OVERRIDEN FUNCITONS
@@ -134,4 +161,5 @@ contract BestProject is ERC20, AccessControl {
         uint256 tokensToSend = _amount;
         transfer(msg.sender, tokensToSend);
     }
+    
 }
