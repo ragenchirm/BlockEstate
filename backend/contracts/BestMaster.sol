@@ -18,26 +18,23 @@ contract BestMaster is AccessControl {
     uint public projectPriceInDollars; 
     uint public bestFeeRate;
     address public usdtContractAddress;
-    ERC20 public tetherToken;
 
     constructor() { // ARGS are : (address _usdtContractAddress, uint _projectPriceInDollars, uint _bestFee)
         _grantRole(SUPER_ADMIN_ROLE, msg.sender);
         // JUST TO TEST IN REMIX, REMOVE AFTER
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(OPERATOR_ROLE, msg.sender);
-        bestFeeRate=5;
+        bestFeeRate=100;
         projectPriceInDollars = 30;
         usdtContractAddress = address(0x0ff3726ff76AFdAD513885F49F1601A8E4bB75f7);
         // END OF TEST IN REMIX 
         _setRoleAdmin(DEFAULT_ADMIN_ROLE, SUPER_ADMIN_ROLE);
         _setRoleAdmin(SUPER_ADMIN_ROLE, SUPER_ADMIN_ROLE);
-        // Variable initialization
         
         // UNCOMMENT NEXT LINES
         //bestFee=_bestFee;
         //projectPriceInDollars=_projectPriceInDollars;
         //usdtContractAddress=_usdtContractAddress;
-        tetherToken = ERC20(usdtContractAddress);
     }
 
     //MODIFIERS
@@ -50,12 +47,12 @@ contract BestMaster is AccessControl {
         projectPriceInDollars=_projectPriceInDollars;
     }
     //FUNCTIONS
-    function withdraw(uint _amountInDollars)external onlyRole(SUPER_ADMIN_ROLE){
-        (bool success, bytes memory data) = transferUsdtToUser(_amountInDollars);
+    function adminWithdraw(uint _amount)external onlyRole(SUPER_ADMIN_ROLE){
+        (bool success, bytes memory data) = _transferUsdtToUser(_amount);
         if(success){
-            emit FundsWithdrawalByAdmin( msg.sender, convertInUSDT(_amountInDollars));
+            emit FundsWithdrawalByAdmin( msg.sender, _amount);
         }else{
-            revert USDTTransferError(address(this),msg.sender, convertInUSDT(_amountInDollars));
+            revert USDTTransferError(address(this),msg.sender, _amount);
         }
     }
 
@@ -72,10 +69,11 @@ contract BestMaster is AccessControl {
         string calldata _desc_link,
         string calldata _projectName
     ) external onlyRole(OPERATOR_ROLE) notBlacklist {
-       (bool success, bytes memory data) = transferUsdtToContract(projectPriceInDollars);
+       (bool success, bytes memory data) = _transferUsdtToContract(projectPriceInDollars*1000000);
        require(success,"Project price hasn't been paid");
         BestProject project = new BestProject(
             msg.sender,
+            address(this),
             usdtContractAddress,
             _initialSupply,
             _projectDeadline,
@@ -87,14 +85,11 @@ contract BestMaster is AccessControl {
         bestProjectsAddresses.push(address(project));
     }
    // INTERNAL FUNCTIONS
-    function convertInUSDT(uint _amountInDollars) internal pure returns(uint){
-        return _amountInDollars*1000000;
+    function _transferUsdtToContract(uint _amountInDollars) internal returns(bool, bytes memory){
+        return usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),_amountInDollars));
     }
-    function transferUsdtToContract(uint _amountInDollars) internal returns(bool, bytes memory){
-        return usdtContractAddress.call(abi.encodeWithSignature("transferFrom(address,address,uint256)", msg.sender,address(this),convertInUSDT(_amountInDollars)));
-    }
-    function transferUsdtToUser(uint _amountInDollars) internal returns(bool, bytes memory){
-        return usdtContractAddress.call(abi.encodeWithSignature("transfer(address,uint256)", msg.sender, convertInUSDT(_amountInDollars)));
+    function _transferUsdtToUser(uint _amountInDollars) internal returns(bool, bytes memory){
+        return usdtContractAddress.call(abi.encodeWithSignature("transfer(address,uint256)", msg.sender, _amountInDollars));
     }
 
     // Overriden functions

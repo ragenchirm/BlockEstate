@@ -52,11 +52,4 @@ library CalculateInterest {
         return _interestIPB*1000;
     }
 
-    function _getTimePassedInDays(uint _initialTime)private view returns(uint){
-        return _convertTimeInDays(block.timestamp - _initialTime);
-    }
-
-    function _convertTimeInDays(uint _time)private pure returns (uint){
-        return _time/86400;
-    }
 }
