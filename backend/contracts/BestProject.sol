@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./CalculateInterest.sol";
 import "hardhat/console.sol";
 
 error WrongProjectStatusError(uint _actualStatusActual);
@@ -88,6 +89,9 @@ contract BestProject is ERC20, AccessControl {
         }else{
             revert USDTTransferError(msg.sender, address(this),convertInUSDT(_amount));
         }
+        if (alreadyFunded()==totalSupply()){
+            launchProject();
+        }
     }
 
       function askForARefund(uint _amount) isOneOfProjectStatus(ProjectStatus.Crowdfunding, ProjectStatus.Canceled) notBlacklist external {
@@ -101,7 +105,7 @@ contract BestProject is ERC20, AccessControl {
         }   
     }
 
-    function launchProject() onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.Crowdfunding) external {
+    function launchProject() isProjectStatus(ProjectStatus.Crowdfunding) internal {
         require(alreadyFunded()==totalSupply(),"Project not funded yet");
         projectStatus = ProjectStatus.ProjectLaunched;
         emit ProjectStatusChange(uint(ProjectStatus.Crowdfunding), uint(ProjectStatus.ProjectLaunched));

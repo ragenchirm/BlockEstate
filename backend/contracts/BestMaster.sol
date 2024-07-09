@@ -16,7 +16,7 @@ contract BestMaster is AccessControl {
     bytes32 constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
     uint public projectPriceInDollars; 
-    uint public bestFee;
+    uint public bestFeeRate;
     address public usdtContractAddress;
     ERC20 public tetherToken;
 
@@ -25,7 +25,7 @@ contract BestMaster is AccessControl {
         // JUST TO TEST IN REMIX, REMOVE AFTER
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(OPERATOR_ROLE, msg.sender);
-        bestFee=5;
+        bestFeeRate=5;
         projectPriceInDollars = 30;
         usdtContractAddress = address(0x0ff3726ff76AFdAD513885F49F1601A8E4bB75f7);
         // END OF TEST IN REMIX 
@@ -46,7 +46,7 @@ contract BestMaster is AccessControl {
         _;
     }
 
-    function setProjectPriceInDollars(uint _projectPriceInDollars) external{
+    function setProjectPriceInDollars(uint _projectPriceInDollars) onlyRole (DEFAULT_ADMIN_ROLE) external{
         projectPriceInDollars=_projectPriceInDollars;
     }
     //FUNCTIONS
@@ -59,9 +59,9 @@ contract BestMaster is AccessControl {
         }
     }
 
-    function setFee(uint _fee)external onlyRole(DEFAULT_ADMIN_ROLE){
-        require( _fee <= 99,"Can't set more than a 99% fee");
-        bestFee=_fee;
+    function setFeeRate(uint _feeRate)external onlyRole(DEFAULT_ADMIN_ROLE){
+        require( _feeRate <= 99,"Can't set more than a 99% fee");
+        bestFeeRate=_feeRate;
     }
 
 
@@ -80,7 +80,7 @@ contract BestMaster is AccessControl {
             _initialSupply,
             _projectDeadline,
             _interestRate,
-            bestFee,
+            bestFeeRate,
             _desc_link,
             _projectName
         );
