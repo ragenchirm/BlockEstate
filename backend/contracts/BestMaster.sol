@@ -13,6 +13,8 @@ import "hardhat/console.sol";
 /// @dev This contract implements a factory of contracts BestProject, which will be created for each new project
 
 contract BestMaster is AccessControl {
+    error UserBlacklistedError(address _user);
+    error USDTTransferError(address _from, address _to, uint _amount);
     event FundsWithdrawalByAdmin(address _operator, uint _amountInDollars);
     event ProjectCreated(address _project, address _operator);
 
@@ -39,7 +41,9 @@ contract BestMaster is AccessControl {
 
     //MODIFIERS
     modifier notBlacklist() {
-        require(!hasRole(BLACKLIST_ROLE, msg.sender), "User Blacklisted");
+        if (hasRole(BLACKLIST_ROLE, msg.sender)) {
+            revert UserBlacklistedError(msg.sender);
+        }
         _;
     }
     // Factory
@@ -67,11 +71,11 @@ contract BestMaster is AccessControl {
             _projectName
         );
         bestProjectsAddresses.push(address(project));
-       emit ProjectCreated(address(project), msg.sender);
+        emit ProjectCreated(address(project), msg.sender);
     }
 
     //FUNCTIONS
-      //Setters
+    //Setters
     function setProjectPriceInDollars(
         uint _projectPriceInDollars
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -84,7 +88,7 @@ contract BestMaster is AccessControl {
     }
 
     // Admin Withdrawal
-        function adminWithdraw(uint _amount) external onlyRole(SUPER_ADMIN_ROLE) {
+    function adminWithdraw(uint _amount) external onlyRole(SUPER_ADMIN_ROLE) {
         (bool success, bytes memory data) = _transferUsdtToUser(_amount);
         if (success) {
             emit FundsWithdrawalByAdmin(msg.sender, _amount);
@@ -146,8 +150,5 @@ contract BestMaster is AccessControl {
         );
         _revokeRole(role, account);
     }
-
-    // receive and fallback cause we never know
-    receive() external payable {}
-    fallback() external payable {}
+    
 }
