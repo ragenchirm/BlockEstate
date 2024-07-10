@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 error WrongProjectStatusError(uint _actualStatusActual);
 error USDTTransferError(address _from, address _to, uint _amount);
 
-contract BestProject is ERC20, AccessControl {
+contract BestProject is ERC20, AccessControl, CalculateInterest {
     event UserInvested(address _investor, uint _amountInDollars);
     event UserAskedForARefund(address _investor, uint _amountInDollars);
     event UserClaimedFunds(address _user,  uint _fundClaimed);
@@ -27,21 +27,23 @@ contract BestProject is ERC20, AccessControl {
         ProjectFinished
     }
 
-    ProjectStatus public projectStatus;
+    //private variables
+    ERC20 tetherToken;
+    //public variables
     address public usdtContractAddress;
     address public masterContractAddress;
+    address public projectCreator;
     uint256 public projectDeadline;
     uint256 public interestRateIPB;//IPB = Index Basis Point. So for exemple 100 represents a 1% interest rate
     uint256 public bestFeeRateIPB;
     uint public projectLaunchDate;
-    uint public claimedFunds;
     string public desc_link;
-    ERC20 public tetherToken;
+    ProjectStatus public projectStatus;
 
     bytes32 constant BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
 
     constructor(
-        address _firstOperator,
+        address _projectCreator,
         address _masterContractAddress,
         address _usdtContractAddress,
         uint256 _initialSupply,
@@ -58,8 +60,9 @@ contract BestProject is ERC20, AccessControl {
         interestRateIPB = _interestRateIPB;
         bestFeeRateIPB = _bestFeeRateIPB;
         desc_link = _desc_link;
-
-        _grantRole(DEFAULT_ADMIN_ROLE, _firstOperator);
+        
+        projectCreator = _projectCreator;
+        _grantRole(DEFAULT_ADMIN_ROLE, _projectCreator);
         _mint(address(this), _initialSupply);
         projectLaunchDate = block.timestamp;
         tetherToken=ERC20(usdtContractAddress);
@@ -143,17 +146,17 @@ contract BestProject is ERC20, AccessControl {
 
     function finishProject() onlyRole(DEFAULT_ADMIN_ROLE) isProjectStatus(ProjectStatus.ProjectLaunched)external{
         require(tetherToken.balanceOf(address(this)) >= totalAmountWithInterest());
-        (bool success, bytes memory data) = _transferUsdtToMaster(CalculateInterest.calculateFee(_getTimePassedInDays(), totalSupply(), interestRateIPB, bestFeeRateIPB));
+        (bool success, bytes memory data) = _transferUsdtToMaster(calculateFee(_getTimePassedInDays(), totalSupply(), interestRateIPB, bestFeeRateIPB));
             if(success){
                 projectStatus = ProjectStatus.ProjectFinished;
                 emit ProjectStatusChange(uint(ProjectStatus.ProjectLaunched), uint(projectStatus));
             }else{
-                revert USDTTransferError(address(this),masterContractAddress,CalculateInterest.calculateFee(_getTimePassedInDays(), totalSupply(), interestRateIPB, bestFeeRateIPB));
+                revert USDTTransferError(address(this),masterContractAddress,calculateFee(_getTimePassedInDays(), totalSupply(), interestRateIPB, bestFeeRateIPB));
             }
     }
 
     function claimFundsWithInterest() isProjectStatus (ProjectStatus.ProjectFinished)external{
-        (bool success, bytes memory data) = _transferUsdtToUser(CalculateInterest.calculateRealInterest(_getTimePassedInDays(),balanceOf(msg.sender),interestRateIPB,bestFeeRateIPB));
+        (bool success, bytes memory data) = _transferUsdtToUser(calculateRealInterest(_getTimePassedInDays(),balanceOf(msg.sender),interestRateIPB,bestFeeRateIPB));
         if(success){
             _burn(msg.sender,balanceOf(msg.sender));
             emit UserClaimedFunds(msg.sender,  balanceOf(msg.sender));
@@ -163,11 +166,11 @@ contract BestProject is ERC20, AccessControl {
     }
 
     function totalAmountWithInterest() public view returns(uint){
-        totalSupply() + CalculateInterest.calculateInterestWithCompound(_getTimePassedInDays(),totalSupply(),interestRateIPB);
+        totalSupply() + calculateInterestWithCompound(_getTimePassedInDays(),totalSupply(),interestRateIPB);
     }
 
     // INTERNAL OR PRIVATE FUNCTIONS
-    function alreadyFunded() internal view returns(uint) {
+    function alreadyFunded() private view returns(uint) {
         return totalSupply() - balanceOf(address(this));
     }
     function _transferUsdtToContract(uint _amount) private returns(bool, bytes memory){
