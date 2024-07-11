@@ -8,7 +8,6 @@ jobs:
   tests:
     name: Smart Contract Tests
     runs-on: ubuntu-latest
-    working-directory: backend
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -28,6 +27,8 @@ jobs:
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+        working-directory: backend
 
       - name: Run Tests
         run: npx hardhat test
+        working-directory: backend
