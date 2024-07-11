@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-   build:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -19,8 +19,8 @@ jobs:
 
     - name: Install dependencies
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
-       run: npm ci
-       env:
+      run: npm ci
+      env:
         DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
       working-directory: backend
 
