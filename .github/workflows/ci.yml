@@ -13,7 +13,9 @@ jobs:
       with:
         node-version: 16
     - run: npm install
+      working-directory: backend
     - run: npm run build
+      working-directory: backend
       env:
         DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
 
