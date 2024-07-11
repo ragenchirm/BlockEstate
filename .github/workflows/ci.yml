@@ -12,10 +12,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 20.11.1
+      - name: Use Node.js 20.15.0
         uses: actions/setup-node@v1
         with:
-          node-version: 20.11.1
+          node-version: 20.15.0
 
       - name: Cache Node Modules
         id: cache-node-modules
@@ -27,8 +27,12 @@ jobs:
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+        env:
+          DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
         working-directory: backend
 
       - name: Run Tests
         run: npx hardhat test
+        env:
+          DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
         working-directory: backend
