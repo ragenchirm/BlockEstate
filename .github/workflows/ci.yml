@@ -33,4 +33,6 @@ jobs:
 
       - name: Run Tests
         run: npx hardhat test
+        env:
+          DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
         working-directory: backend
