@@ -10,6 +10,14 @@ import "hardhat/console.sol";
 contract BestProject is ERC20, AccessControl, CalculateInterest {
     error WrongProjectStatusError(uint _actualStatusActual);
     error USDTTransferError(address _from, address _to, uint _amount);
+    error UserBlacklistedError(address _user);
+    error TooMuchError(uint _contractBalance, uint _amount);
+    error NotEnoughFundsError(address _user, uint _amount);
+    error WithdrawalIsTooBigError(uint _maxWithdrawal, uint _amount);
+    error ProjectNotRefundedError(
+        uint _minNecessaryBalance,
+        uint _actualBalance
+    );
 
     event UserInvested(address _investor, uint _amountInDollars);
     event UserAskedForARefund(address _investor, uint _amountInDollars);
@@ -68,12 +76,16 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
 
     //Modifier
     modifier notBlacklist() {
-        require(!hasRole(BLACKLIST_ROLE, msg.sender), "User Blacklisted");
+        if (hasRole(BLACKLIST_ROLE, msg.sender)) {
+            revert UserBlacklistedError(msg.sender);
+        }
         _;
     }
 
     modifier notToMuch(uint _amount) {
-        require(balanceOf(address(this)) >= _amount, "Amount is too much");
+        if (balanceOf(address(this)) < _amount) {
+            revert TooMuchError(balanceOf(address(this)), _amount);
+        }
         _;
     }
 
@@ -124,10 +136,9 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
         isOneOfProjectStatus(ProjectStatus.Crowdfunding, ProjectStatus.Canceled)
         notBlacklist
     {
-        require(
-            balanceOf(msg.sender) >= _amount,
-            "You don't have enough funds"
-        );
+        if (balanceOf(msg.sender) < _amount) {
+            revert NotEnoughFundsError(msg.sender, _amount);
+        }
         (bool success, bytes memory data) = _transferUsdtToUser(_amount);
         if (success) {
             _transfer(msg.sender, address(this), _amount);
@@ -147,11 +158,15 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
             ProjectStatus.ProjectFinished
         )
     {
-        if (projectStatus == ProjectStatus.ProjectFinished) {
-            require(
-                tetherToken.balanceOf(address(this)) - _amount >=
+        if (
+            projectStatus == ProjectStatus.ProjectFinished &&
+            (tetherToken.balanceOf(address(this))  <
+                totalAmountWithInterest()+_amount)
+        ) {
+            revert WithdrawalIsTooBigError(
+                tetherToken.balanceOf(address(this)) -
                     totalAmountWithInterest(),
-                "Can't withdraw too much funds"
+                _amount
             );
         }
         (bool success, bytes memory data) = _transferUsdtToUser(_amount);
@@ -182,8 +197,12 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
         onlyRole(DEFAULT_ADMIN_ROLE)
         isProjectStatus(ProjectStatus.ProjectLaunched)
     {
+        if (tetherToken.balanceOf(address(this)) < totalAmountWithInterest()) {
+            revert ProjectNotRefundedError(totalAmountWithInterest(),
+                tetherToken.balanceOf(address(this))
+            );          
+        }
 
-        require(tetherToken.balanceOf(address(this)) >= totalAmountWithInterest(),"Project not refunded enougth");
         (bool success, bytes memory data) = _transferUsdtToMaster(
             calculateFee(
                 _getTimePassedInDays(),
@@ -225,7 +244,7 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
             )
         );
         if (success) {
-           uint prevBalance= balanceOf(msg.sender);
+            uint prevBalance = balanceOf(msg.sender);
             _burn(msg.sender, balanceOf(msg.sender));
             emit UserClaimedFunds(msg.sender, prevBalance);
         } else {
@@ -238,7 +257,8 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
     }
 
     function totalAmountWithInterest() public view returns (uint) {
-       return totalSupply() +
+        return
+            totalSupply() +
             calculateInterestWithCompound(
                 _getTimePassedInDays(),
                 totalSupply(),
@@ -249,9 +269,7 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
     // INTERNAL OR PRIVATE FUNCTIONS
     function launchProject()
         private
-        isProjectStatus(ProjectStatus.Crowdfunding)
     {
-        require(alreadyFunded() == totalSupply(), "Project not funded yet");
         projectStatus = ProjectStatus.ProjectLaunched;
         emit ProjectStatusChange(
             uint(ProjectStatus.Crowdfunding),
@@ -333,7 +351,4 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
         return 6;
     }
 
-    // EXEMPLE FUNCITONS
-    receive() external payable {}
-    fallback() external payable {}
 }

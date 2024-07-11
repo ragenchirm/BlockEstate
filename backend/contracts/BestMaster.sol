@@ -33,7 +33,7 @@ contract BestMaster is AccessControl {
         _setRoleAdmin(SUPER_ADMIN_ROLE, SUPER_ADMIN_ROLE);
 
         //Variable Initialization
-        bestFeeRateIPB = 100;
+        bestFeeRateIPB = 1000;
         projectPriceInDollars = 30;
 
         usdtContractAddress = _usdtContractAddress;
@@ -150,5 +150,5 @@ contract BestMaster is AccessControl {
         );
         _revokeRole(role, account);
     }
-    
+
 }
