@@ -26,13 +26,9 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm install
-        
-      - run: npm run build
+        run: npm ci
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
-        
-       
         working-directory: backend
 
       - name: Run Tests
