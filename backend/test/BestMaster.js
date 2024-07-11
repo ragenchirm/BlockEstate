@@ -564,7 +564,6 @@ describe("BLOCK ESTATE CONTRACTS TESTING", function () {
      lessThan(interest+ACCURACY_MARGIN*2n);//ACCURACY_MARGIN*2 = 10cent/year
     });
 
-
   });
 
 });
