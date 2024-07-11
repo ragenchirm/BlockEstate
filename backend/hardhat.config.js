@@ -23,7 +23,7 @@ module.exports = {
     },
     hardhat: { //To fork maintnet
       forking: {
-        url: process.env.IN_MAINNET_RPC_URL,
+        url: "https://mainnet.infura.io/v3/c60bac258c974c46ab0583ca815b3e3c",
       }
     }
   },
