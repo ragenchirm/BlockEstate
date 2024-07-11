@@ -8,7 +8,6 @@ jobs:
   tests:
     name: Smart Contract Tests
     runs-on: ubuntu-latest
-    working-directory: backend
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -21,6 +20,7 @@ jobs:
       - name: Cache Node Modules
         id: cache-node-modules
         uses: actions/cache@v2
+        working-directory: backend
         with:
           path: 'node_modules'
           key: node_modules-${{ hashFiles('package-lock.json') }}
