@@ -1,23 +1,39 @@
-const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+const { loadFixture, time, anyValue} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { expect } = require("chai");
 const keccak256 = require('keccak256')
 
-describe("Block Estate contract testing", function () {
-  let bestMaster, stableContract, superAdmin, user1, user2, user3;
-  const SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
-  const DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
-  const OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
-  const BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
-  const STABLECOIN_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; //address of USDT contract
-  const HOLDER_ADDRESS = "0xF977814e90dA44bFA03b6295A0616a897441aceC"; //address of binance whoe have several billions USDT
-  const INITIAL_BEST_FEE_RATE = 100;
-  const INITIAL_PROJECT_PRICE_IN_DOLLARS = 30;
+describe("BLOCK ESTATE CONTRACTS TESTING", function () {
+  let bestMaster, bestProject, stableContract, superAdmin, user1, user2, user3, SUPER_ADMIN_ROLE, DEFAULT_ADMIN_ROLE, OPERATOR_ROLE, BLACKLIST_ROLE, STABLECOIN_ADDRESS, HOLDER_ADDRESS, INITIAL_PROJECT_PRICE_IN_DOLLARS, INITIAL_SUPPLY, TWOxINITIAL_SUPPLY, HALF_INITIAL_SUPPLY, PROJECT_DEADLINE, INTEREST_RATE_IPB, BEST_FEE_RATE_IPB, DESC_LINK, PROJECT_NAME, ACCURACY_MARGIN;
 
-
+  async function initializeVariableFixture() {
+    SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
+    DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
+    STABLECOIN_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; //address of USDT contract
+    HOLDER_ADDRESS = "0xF977814e90dA44bFA03b6295A0616a897441aceC"; //address of binance whoe have several billions USDT
+    INITIAL_PROJECT_PRICE_IN_DOLLARS = 30n;
+    INITIAL_SUPPLY = 1000000000n;
+    TWOxINITIAL_SUPPLY = 2000000000n;
+    HALF_INITIAL_SUPPLY = 500000000n;
+    PROJECT_DEADLINE = 1672531199n;
+    INTEREST_RATE_IPB = 100n;
+    BEST_FEE_RATE_IPB = 100n;
+    DESC_LINK = "https://best-project.com";
+    PROJECT_NAME = "My Best Project";
+    ACCURACY_MARGIN = 100000n; // margin of accuracy for interest calculus set at 0.10$ (10 cents)
+  }
+  async function approveProjectForUsersFixture() {
+    await stableContract.approve(bestProject.target, 0);
+    await stableContract.approve(bestProject.target, TWOxINITIAL_SUPPLY);
+    await stableContract.connect(user1).approve(bestProject.target, 0);
+    await stableContract.connect(user1).approve(bestProject.target, TWOxINITIAL_SUPPLY);
+    await stableContract.connect(user2).approve(bestProject.target, 0);
+    await stableContract.connect(user2).approve(bestProject.target, TWOxINITIAL_SUPPLY);
+  }
   async function getStablecoinContractFixture() {
     stableContract = await hre.ethers.getContractAt("IERC20", STABLECOIN_ADDRESS);
   }
-
   async function fundTestUsersFixture() {
     const binanceImpersonatedSigner = await hre.ethers.getImpersonatedSigner(HOLDER_ADDRESS)
     let transactionStable = await stableContract.connect(binanceImpersonatedSigner).transfer(superAdmin, 1000000000000);
@@ -27,26 +43,42 @@ describe("Block Estate contract testing", function () {
     transactionStable = await stableContract.connect(binanceImpersonatedSigner).transfer(user2, 1000000000000);
     await transactionStable.wait();
   }
-
   async function deployBestMasterFixture() {
     const BestMaster = await ethers.getContractFactory("BestMaster");
     bestMaster = await BestMaster.deploy(STABLECOIN_ADDRESS);
     return { bestMaster };
   }
+  async function deployBestProjectFixture() {
+    const BestProject = await ethers.getContractFactory("BestProject");
+    bestProject = await BestProject.deploy(
+      superAdmin, //project creator address
+      bestMaster,//TO CHANGE MASTER CONTRACT ADDRESS
+      STABLECOIN_ADDRESS, //stablecoin contract address
+      INITIAL_SUPPLY, // _initialSupply
+      PROJECT_DEADLINE, // _projectDeadline
+      INTEREST_RATE_IPB, // _interestRateIPB
+      BEST_FEE_RATE_IPB, // bestFeeRateIPB
+      DESC_LINK, // _desc_link
+      PROJECT_NAME // _projectName
+    );
+
+  }
+
 
   before(async () => {
+    await loadFixture(initializeVariableFixture);
     [superAdmin, user1, user2, user3] = await ethers.getSigners();
     await loadFixture(getStablecoinContractFixture);
     await loadFixture(fundTestUsersFixture);
+    await loadFixture(deployBestMasterFixture);
   })
 
-  beforeEach(async () => {
-    const deployFixture = await loadFixture(deployBestMasterFixture);
-    bestMaster = deployFixture.bestMaster;
-  });
+
+
   describe("Best Master contract testing", function () {
-
-
+    beforeEach(async () => {
+      await loadFixture(deployBestMasterFixture);
+    });
     describe("Checks that Test Users are funded appropriately so the contract can be tested", function () {
       it("Holder account shoud have funds", async function () {
         let stableBalanceOfHolder = await stableContract.balanceOf(HOLDER_ADDRESS);
@@ -80,7 +112,7 @@ describe("Block Estate contract testing", function () {
       });
 
       it("Should initialize variables correctly", async function () {
-        expect(await bestMaster.bestFeeRateIPB()).to.equal(INITIAL_BEST_FEE_RATE);
+        expect(await bestMaster.bestFeeRateIPB()).to.equal(BEST_FEE_RATE_IPB);
         expect(await bestMaster.projectPriceInDollars()).to.equal(INITIAL_PROJECT_PRICE_IN_DOLLARS);
         expect(await bestMaster.usdtContractAddress()).to.equal(STABLECOIN_ADDRESS);
       });
@@ -89,7 +121,7 @@ describe("Block Estate contract testing", function () {
     describe("Project Creation", function () {
       it("Should allow operator to create a project", async function () {
         await bestMaster.grantRole(OPERATOR_ROLE, user1);
-        await stableContract.connect(user1).approve(bestMaster, INITIAL_PROJECT_PRICE_IN_DOLLARS * 1000000);
+        await stableContract.connect(user1).approve(bestMaster, INITIAL_PROJECT_PRICE_IN_DOLLARS * 1000000n);
 
         await expect(bestMaster.connect(user1).createProject(1000000000, // _initialSupply
           1672531199, // _projectDeadline
@@ -99,7 +131,7 @@ describe("Block Estate contract testing", function () {
         )).to.emit(bestMaster, "ProjectCreated");
 
         const projectAddress = await bestMaster.bestProjectsAddresses(0);
-        const project = await hre.ethers.getContractAt("BestProject", projectAddress);;
+        const project = await hre.ethers.getContractAt("BestProject", projectAddress);
 
         expect(await project.name()).to.equal("Test Project");
       });
@@ -113,8 +145,8 @@ describe("Block Estate contract testing", function () {
         )).to.be.revertedWith("Project price hasn't been paid");
       });
       it("Should reject project creation if not an operator", async function () {
-        await stableContract.connect(superAdmin).approve(bestMaster, INITIAL_PROJECT_PRICE_IN_DOLLARS * 1000000);
-        await expect(bestMaster.connect(superAdmin).createProject(1000000000, // _initialSupply
+        await stableContract.approve(bestMaster, INITIAL_PROJECT_PRICE_IN_DOLLARS * 1000000n);
+        await expect(bestMaster.createProject(1000000000, // _initialSupply
           1672531199,// _projectDeadline
           500,//_interestRateIPB
           "https://example.com",//_desc_link
@@ -122,7 +154,7 @@ describe("Block Estate contract testing", function () {
         )).to.be.revertedWithCustomError(bestMaster, "AccessControlUnauthorizedAccount");
       });
       it("Should reject project creation if operator blacklisted", async function () {
-        await stableContract.connect(user1).approve(bestMaster, INITIAL_PROJECT_PRICE_IN_DOLLARS * 1000000);
+        await stableContract.connect(user1).approve(bestMaster, INITIAL_PROJECT_PRICE_IN_DOLLARS * 1000000n);
         await bestMaster.grantRole(OPERATOR_ROLE, user1);
         await bestMaster.grantRole(BLACKLIST_ROLE, user1);
         await expect(bestMaster.connect(user1).createProject(1000000000, // _initialSupply
@@ -215,5 +247,137 @@ describe("Block Estate contract testing", function () {
 
       });
     });
+  });
+
+  describe("Best Project contract testing", function () {
+    beforeEach(async () => {
+      await loadFixture(deployBestProjectFixture);
+      await loadFixture(approveProjectForUsersFixture);
+    })
+    describe("Initial State", function () {
+      it("Should return My Best Project as name() ", async function () {
+        expect(await bestProject.name()).to.equal("My Best Project");
+      })
+      it("should set the correct project creator", async function () {
+        expect(await bestProject.hasRole(DEFAULT_ADMIN_ROLE, superAdmin)).to.equal(true);
+      });
+
+      it("should mint initial supply to the contract", async function () {
+        expect(await bestProject.balanceOf(bestProject)).to.equal(INITIAL_SUPPLY);
+      });
+      it("should get the correct total supply ", async function () {
+        expect(await bestProject.totalSupply()).to.equal(INITIAL_SUPPLY); // Crowdfunding
+      });
+
+      it("should set the correct project status", async function () {
+        expect(await bestProject.projectStatus()).to.equal(0); // Crowdfunding
+      });
+      it("should get the correct stable contract address", async function () {
+        expect(await bestProject.usdtContractAddress()).to.equal(STABLECOIN_ADDRESS); // Crowdfunding
+      });
+    });
+
+    describe("Invest in Project", function () {
+      it("should allow users to invest in the project", async function () {
+        let initialStableBalance = await stableContract.balanceOf(user2);
+        await expect(bestProject.connect(user2).investInProject(50000000)).to.emit(bestProject, "UserInvested").withArgs(user2, 50000000);
+        expect(await bestProject.balanceOf(user2)).to.equal(50000000n);
+        expect(initialStableBalance - await stableContract.balanceOf(user2)).to.equal(50000000n);
+      });
+
+      it("should lauch project automatiquely when Total Supply is funded Crowdfunding status", async function () {
+        await expect(bestProject.connect(user1).investInProject(INITIAL_SUPPLY)).to.emit(bestProject, "UserInvested").withArgs(user1, INITIAL_SUPPLY);
+        expect(await bestProject.projectStatus()).to.equal(2n);
+      });
+
+      it("should not allow investments when project is not in Crowdfunding status", async function () {
+        await expect(bestProject.connect(user1).investInProject(INITIAL_SUPPLY)).to.emit(bestProject, "UserInvested").withArgs(user1, INITIAL_SUPPLY);
+        await expect(bestProject.connect(user1).investInProject(50000000)).to.be.revertedWithCustomError(bestProject, "WrongProjectStatusError");
+      });
+    });
+
+    describe("Ask for Refund", function () {
+      beforeEach(async function () {
+        await bestProject.connect(user1).investInProject(HALF_INITIAL_SUPPLY);
+      });
+      it("should allow users to ask for a refund", async function () {
+        await expect(bestProject.connect(user1).askForARefund(HALF_INITIAL_SUPPLY)).to.emit(bestProject, "UserAskedForARefund").withArgs(user1, HALF_INITIAL_SUPPLY);
+        expect(await bestProject.balanceOf(user1)).to.equal(0);
+      });
+
+      it("should not allow refunds when project is not in Crowdfunding or Canceled status", async function () {
+        await bestProject.connect(user1).investInProject(HALF_INITIAL_SUPPLY);
+        await expect(bestProject.connect(user1).askForARefund(HALF_INITIAL_SUPPLY)).to.be.revertedWithCustomError(bestProject, "WrongProjectStatusError");
+      });
+    });
+
+    describe("Admin Withdraw and Deposit", function () {
+      beforeEach(async function () {
+        await bestProject.investInProject(INITIAL_SUPPLY);
+      });
+
+      it("should allow admin to withdraw funds", async function () {
+        await expect(bestProject.adminWithdraw(INITIAL_SUPPLY))
+          .to.emit(bestProject, "FundsWithdrawalByAdmin")
+          .withArgs(superAdmin, INITIAL_SUPPLY);
+      });
+
+      it("should allow admin to deposit funds", async function () {
+        await expect(bestProject.adminWithdraw(INITIAL_SUPPLY))
+          .to.emit(bestProject, "FundsWithdrawalByAdmin")
+          .withArgs(superAdmin, INITIAL_SUPPLY);
+        await bestProject.adminDeposit(HALF_INITIAL_SUPPLY);
+
+        expect(await stableContract.balanceOf(bestProject)).to.equal(HALF_INITIAL_SUPPLY);
+      });
+
+      it("should not allow withdraw if not enough funds after interest", async function () {
+        await expect(bestProject.adminWithdraw(INITIAL_SUPPLY)).to.emit(bestProject, "FundsWithdrawalByAdmin").withArgs(superAdmin, INITIAL_SUPPLY);
+        await bestProject.adminDeposit(HALF_INITIAL_SUPPLY);
+        expect(await stableContract.balanceOf(bestProject)).to.equal(HALF_INITIAL_SUPPLY);
+        await expect(bestProject.finishProject()).to.be.revertedWith("Project not refunded enougth");
+      });
+
+    });
+
+    describe("Interest Calculation", function () {
+      beforeEach(async function () {
+        await bestProject.investInProject(INITIAL_SUPPLY);
+      });
+      it("should calculate insterest properly", async function () {
+        await time.increase(86400 * 365);
+        const testAmountWithInterest = BigInt(INITIAL_SUPPLY + INITIAL_SUPPLY * INTEREST_RATE_IPB / 10000n);
+        expect(await bestProject.totalAmountWithInterest()).to.be.greaterThan(testAmountWithInterest - 100000n);
+        expect(await bestProject.totalAmountWithInterest()).to.be.lessThan(testAmountWithInterest + ACCURACY_MARGIN);
+      });
+      it("should calculate insterest properly with compound", async function () {
+        await time.increase(86400 * 735); // Two years and 5 days
+        let testAmountWithInterest = BigInt(INITIAL_SUPPLY + INITIAL_SUPPLY * INTEREST_RATE_IPB / 10000n);
+        testAmountWithInterest = BigInt(testAmountWithInterest + testAmountWithInterest * INTEREST_RATE_IPB / 10000n);
+        testAmountWithInterest = BigInt(testAmountWithInterest + testAmountWithInterest * INTEREST_RATE_IPB / 10000n * 5n / 365n);
+        expect(await bestProject.totalAmountWithInterest()).to.be.greaterThan(testAmountWithInterest - 100000n);
+        expect(await bestProject.totalAmountWithInterest()).to.be.lessThan(testAmountWithInterest + ACCURACY_MARGIN);
+      });
+    });
+
+    describe("Finish Project and Claim Funds", function () {
+      beforeEach(async function () {
+        await bestProject.connect(user1).investInProject(INITIAL_SUPPLY);
+      });
+
+      it("should allow admin to finish project", async function () {
+          await expect(bestProject.finishProject()).to.emit(bestProject, "ProjectStatusChange").withArgs(2n,3n);
+          expect(await bestProject.projectStatus()).to.equal(3n); // ProjectFinished
+      });
+
+      it("should allow users to claim funds with interest", async function () {
+          await bestProject.finishProject();
+          await expect(bestProject.connect(user1).claimFundsWithInterest()).to.emit(bestProject, "UserClaimedFunds").withArgs(user1,INITIAL_SUPPLY)
+
+         expect(await bestProject.balanceOf(user1)).to.equal(0n);
+      });
+  });
+
+
   });
 });

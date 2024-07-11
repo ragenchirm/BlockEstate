@@ -9,6 +9,7 @@ const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL ||"";
 
 module.exports = {
   solidity: "0.4.17",
+  allowUnlimitedContractSize: true,
   networks: {
     holesky: {
       url: HOLESKY_RPC_URL,

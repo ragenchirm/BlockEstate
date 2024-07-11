@@ -105,7 +105,7 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
         notBlacklist
         notToMuch(_amount)
     {
-        (bool success, bytes memory data) = _transferUsdtToUser(_amount);
+        (bool success, bytes memory data) = _transferUsdtToContract(_amount);
         if (success) {
             _transfer(address(this), msg.sender, _amount);
             emit UserInvested(msg.sender, _amount);
@@ -135,18 +135,6 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
         } else {
             revert USDTTransferError(address(this), msg.sender, _amount);
         }
-    }
-
-    function launchProject()
-        internal
-        isProjectStatus(ProjectStatus.Crowdfunding)
-    {
-        require(alreadyFunded() == totalSupply(), "Project not funded yet");
-        projectStatus = ProjectStatus.ProjectLaunched;
-        emit ProjectStatusChange(
-            uint(ProjectStatus.Crowdfunding),
-            uint(ProjectStatus.ProjectLaunched)
-        );
     }
 
     function adminWithdraw(
@@ -194,9 +182,8 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
         onlyRole(DEFAULT_ADMIN_ROLE)
         isProjectStatus(ProjectStatus.ProjectLaunched)
     {
-        require(
-            tetherToken.balanceOf(address(this)) >= totalAmountWithInterest()
-        );
+
+        require(tetherToken.balanceOf(address(this)) >= totalAmountWithInterest(),"Project not refunded enougth");
         (bool success, bytes memory data) = _transferUsdtToMaster(
             calculateFee(
                 _getTimePassedInDays(),
@@ -238,8 +225,9 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
             )
         );
         if (success) {
+           uint prevBalance= balanceOf(msg.sender);
             _burn(msg.sender, balanceOf(msg.sender));
-            emit UserClaimedFunds(msg.sender, balanceOf(msg.sender));
+            emit UserClaimedFunds(msg.sender, prevBalance);
         } else {
             revert USDTTransferError(
                 address(this),
@@ -250,7 +238,7 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
     }
 
     function totalAmountWithInterest() public view returns (uint) {
-        totalSupply() +
+       return totalSupply() +
             calculateInterestWithCompound(
                 _getTimePassedInDays(),
                 totalSupply(),
@@ -259,11 +247,23 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
     }
 
     // INTERNAL OR PRIVATE FUNCTIONS
+    function launchProject()
+        private
+        isProjectStatus(ProjectStatus.Crowdfunding)
+    {
+        require(alreadyFunded() == totalSupply(), "Project not funded yet");
+        projectStatus = ProjectStatus.ProjectLaunched;
+        emit ProjectStatusChange(
+            uint(ProjectStatus.Crowdfunding),
+            uint(ProjectStatus.ProjectLaunched)
+        );
+    }
+
     function alreadyFunded() private view returns (uint) {
         return totalSupply() - balanceOf(address(this));
     }
     function _transferUsdtToContract(
-        uint _amount
+        uint _amountInDollars
     ) private returns (bool, bytes memory) {
         return
             usdtContractAddress.call(
@@ -271,10 +271,11 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
                     "transferFrom(address,address,uint256)",
                     msg.sender,
                     address(this),
-                    _amount
+                    _amountInDollars
                 )
             );
     }
+
     function _transferUsdtToUser(
         uint _amount
     ) private returns (bool, bytes memory) {
