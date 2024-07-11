@@ -27,12 +27,12 @@ jobs:
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+        working-directory: backend
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
-        working-directory: backend
 
       - name: Run Tests
         run: npx hardhat test
+        working-directory: backend
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
-        working-directory: backend
