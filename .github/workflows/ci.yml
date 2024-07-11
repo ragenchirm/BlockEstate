@@ -5,34 +5,27 @@ on:
     branches: [main]
 
 jobs:
-  tests:
-    name: Smart Contract Tests
+   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    - run: npm install
+    - run: npm run build
+      env:
+        DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
 
-      - name: Use Node.js 20.11.1
-        uses: actions/setup-node@v1
-        with:
-          node-version: 20.11.1
+    - name: Install dependencies
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
+       run: npm ci
+       env:
+        DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
+      working-directory: backend
 
-      - name: Cache Node Modules
-        id: cache-node-modules
-        uses: actions/cache@v2
-        with:
-          path: 'node_modules'
-          key: node_modules-${{ hashFiles('package-lock.json') }}
-
-      - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
-        env:
-          DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
-        working-directory: backend
-
-      - name: Run Tests
-        run: npx hardhat test
-        env:
-          DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
-        working-directory: backend
+    - name: Run Tests
+      run: npx hardhat test
+      env:
+        DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
+      working-directory: backend
