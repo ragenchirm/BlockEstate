@@ -12,15 +12,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 20.11.1
+      - name: Use Node.js 20.15.0
         uses: actions/setup-node@v1
         with:
-          node-version: 20.11.1
+          node-version: 20.15.0
 
       - name: Cache Node Modules
         id: cache-node-modules
         uses: actions/cache@v2
-        working-directory: backend
         with:
           path: 'node_modules'
           key: node_modules-${{ hashFiles('package-lock.json') }}
