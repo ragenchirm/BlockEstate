@@ -235,18 +235,17 @@ contract BestProject is ERC20, AccessControl, CalculateInterest {
         external
         isProjectStatus(ProjectStatus.ProjectFinished)
     {
-        (bool success, bytes memory data) = _transferUsdtToUser(
-            calculateRealInterest(
+        uint prevBalance = balanceOf(msg.sender);
+        uint interest = calculateRealInterest(
                 _getTimePassedInDays(),
                 balanceOf(msg.sender),
                 interestRateIPB,
                 bestFeeRateIPB
-            )
-        );
+            );
+        _burn(msg.sender, balanceOf(msg.sender));
+        (bool success, bytes memory data) = _transferUsdtToUser(prevBalance+interest);
         if (success) {
-            uint prevBalance = balanceOf(msg.sender);
-            _burn(msg.sender, balanceOf(msg.sender));
-            emit UserClaimedFunds(msg.sender, prevBalance);
+            emit UserClaimedFunds(msg.sender, prevBalance+interest);
         } else {
             revert USDTTransferError(
                 address(this),
