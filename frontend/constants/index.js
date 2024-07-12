@@ -1,10 +1,66 @@
-export const contractStableAddress = "0xfe92134da38df8c399a90a540f20187d19216e05"; // sur Hardhat
-export const contractMasterAddress = "0x70F9a4bEd817a3c9cCdFDC53cc625883d7414F9F"; // sur Hardhat
+import {keccak256} from "viem";
+export const contractStableAddress = "0x49AeF2C4005Bf572665b09014A563B5b9E46Df21"; // sur Hardhat
+export const contractMasterAddress = "0xa9efDEf197130B945462163a0B852019BA529a66"; // sur Hardhat
 
 // export const contractStableAddress = "0xfe92134da38df8c399a90a540f20187d19216e05"; // sur Holesky
 // export const contractMasterAddress = "0x70F9a4bEd817a3c9cCdFDC53cc625883d7414F9F"; // sur Holesky
 
 
+//Set Constants
+export const MASTER="MASTER";
+export const PROJECT="PROJECT";
+export const STABLE="STABLE";
+//Set method names
+export const approve="approve";
+export const pause="pause";
+export const unpause="unpause";
+export const allowed="allowed";
+export const _totalSupply="_totalSupply";
+export const balanceOf="balanceOf";
+export const name="name";
+export const hasRole="hasRole";
+export const symbol="symbol";
+export const totalSupply="totalSupply";
+export const adminWithdraw="adminWithdraw";
+export const createProject="createProject";
+export const grantRole="grantRole";
+export const renounceRole="renounceRole";
+export const revokeRole="revokeRole";
+export const setFeeRate="setFeeRate";
+export const setProjectPriceInDollars="setProjectPriceInDollars";
+export const projectPriceInDollars="projectPriceInDollars";
+export const bestFeeRateIPB="bestFeeRateIPB";
+export const usdtContractAddress="usdtContractAddress";
+export const bestProjectsAddresses="bestProjectsAddresses";
+export const getRoleAdmin="getRoleAdmin";
+export const adminDeposit="adminDeposit";
+export const askForARefund="askForARefund";
+export const claimFundsWithInterest="claimFundsWithInterest";
+export const finishProject="finishProject";
+export const investInProject="investInProject";
+export const transfer="transfer";
+export const transferFrom="transferFrom";
+export const calculateFee="calculateFee";
+export const calculateInterestWithCompound="calculateInterestWithCompound";
+export const calculateRealInterest="calculateRealInterest";
+export const decimals="decimals";
+export const masterContractAddress="masterContractAddress";
+export const projectCreator="projectCreator";
+export const projectDeadline="projectDeadline";
+export const interestRateIPB="interestRateIPB";
+export const projectLaunchDate="projectLaunchDate";
+export const desc_link="desc_link";
+export const projectStatus="projectStatus";
+export const totalAmountWithInterest="totalAmountWithInterest";
+// Set the expected networks ID
+export const HARDHAT_EXPECTED_NETWORK_ID = 31337;
+export const SEPOLIA_EXPECTED_NETWORK_ID = 11155111;
+export const HOLESKY_EXPECTED_NETWORK_ID = 17000;
+//Set DAPP ROLES
+export const DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
+export const SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
+export const OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+export const BLACKLIST_ROLE = keccak256("BLACKLIST_ROLE");
 
 // ABI
 export const contractMasterAbi = [
