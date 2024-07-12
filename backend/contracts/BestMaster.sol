@@ -83,7 +83,7 @@ contract BestMaster is AccessControl {
     }
 
     function setFeeRate(uint _feeRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(_feeRate <= 99, "Can't set more than a 99% fee");
+        require(_feeRate <= 9900, "Can't set more than a 99% fee");
         bestFeeRateIPB = _feeRate;
     }
 

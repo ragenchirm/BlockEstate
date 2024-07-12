@@ -214,7 +214,7 @@ describe("BLOCK ESTATE CONTRACTS TESTING", function () {
 
 
       it("Should reject setting fee rate above 99%", async function () {
-        await expect(bestMaster.setFeeRate(100)).to.be.revertedWith("Can't set more than a 99% fee");
+        await expect(bestMaster.setFeeRate(10000)).to.be.revertedWith("Can't set more than a 99% fee");
       });
 
       it("Should allow admin to set fee rate", async function () {
