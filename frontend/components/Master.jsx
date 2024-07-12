@@ -73,17 +73,17 @@ const Master = ({ userAddress, isConnected }) => {
           Bienvenue sur Block Estate
         </h1>
         <p className="text-[#706C61]">{isConnected ? `Vous êtes connecté avec : ${userAddress}` : "You are not Connected"}</p>
-        
+        <SimpleData getData={getStableAddress} getPending={getStablePending} getError={getStableError} refetch={refetchFeeRate} label={"Addresse stablecoin contract : "}>
+        </SimpleData>
+        <SimpleData getData={getIsSuperAdmin} getPending={getIsSuperAdminPending} getError={getIsSuperAdminError} refetch={refetchFeeRate} label={"Super Admin :"}>
+        </SimpleData>
         <SimpleData getData={getProjectPrice} getPending={getProjectPricePending} getError={getProjectPriceError} refetch={refetchProjectPrice} label={"Project Price : "}>
           $
         </SimpleData>
         <SimpleData getData={Number(getFeeRate) / 100} getPending={getFeeRatePending} getError={getFeeRateError} refetch={refetchFeeRate} label={"Fees Rate : "}>
           % des intérêts
         </SimpleData>
-        <SimpleData getData={getStableAddress} getPending={getStablePending} getError={getStableError} refetch={refetchFeeRate} label={"Addresse stablecoin contract : "}>
-        </SimpleData>
-        <SimpleData getData={getIsSuperAdmin} getPending={getIsSuperAdminPending} getError={getIsSuperAdminError} refetch={refetchFeeRate} label={"Super Admin :"}>
-        </SimpleData>
+       
         <SimpleSetter refetch={refetchProjectPrice} method={setProjectPriceInDollars} contract={MASTER} label={"Changer Prix"} labelTitle={"Changer prix projet"} labelPlaceHolder={"Nouveaux prix en $"}></SimpleSetter>
         <SimpleSetter refetch={refetchFeeRate} method={setFeeRate} contract={MASTER} label={"Changer Marckup"} labelTitle={"Marckup %"} labelPlaceHolder={"Nouveau marckup"}></SimpleSetter>
         
