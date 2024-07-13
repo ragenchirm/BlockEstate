@@ -10,6 +10,7 @@ import { contractMasterAddress, contractMasterAbi, contractStableAddress, contra
 import SimpleSetter from "./SimpleSetter";
 import SimpleGetter from "./SimpleGetter";
 import SilenceGetter from "./SilenceGetter"
+import CreateProject from "./CreateProject"
 
 
 
@@ -27,6 +28,8 @@ const Master = ({ userAddress, isConnected }) => {
   const [userUSDTBalance, setUserUSDTBalance] = useState(null);
   const [contractUSDTBalance, setContractUSDTBalance] = useState(0);
   const [contractUSDTAddress, setContractUSDTAddress] = useState(null);
+  const [feeRate, setFeeRateS]=useState(null);
+  const [projectPriceInDol, setProjectPriceS]=useState(0);
 
   const refetchEverthing = () => {
     setRefetchToggle(!refetchToggle);
@@ -52,11 +55,12 @@ const Master = ({ userAddress, isConnected }) => {
   const setUSDTcontractAdress = (_data) => {
     setContractUSDTAddress(_data);
   }
-
-
-
-
-
+  const setFeeRate = (_data) => {
+    setFeeRateS(_data);
+  }
+  const setProjectPrice = (_data) => {
+    setProjectPriceS(_data);
+  }
 
 
   if (!isOnExpectedNetwork) {
@@ -84,11 +88,11 @@ const Master = ({ userAddress, isConnected }) => {
 
         <SimpleGetter funcName={usdtContractAddress} label={"USDT address : "} userAddress={userAddress} contract={MASTER} giveState={setUSDTcontractAdress} refetchToggle={refetchToggle}></SimpleGetter>
 
-        <div className="border rounded-md border-red-700 border-solid p-3 container mx-auto">
+        <div className="border rounded-md border-emerald-700 border-solid p-3 container mx-auto">
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <SimpleGetter funcName={balanceOf} argsProp={[contractMasterAddress]} label={"USDT Contract Balance : "} userAddress={userAddress} contract={STABLE} refetchToggle={refetchToggle} giveState={setUSDTcontractBalance}>$</SimpleGetter>
-            <SimpleGetter funcName={projectPriceInDollars} argsProp={[]} label={"Project price : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle}>$</SimpleGetter>
-            <SimpleGetter funcName={bestFeeRateIPB} argsProp={[]} label={"Marckup : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle}>% sur Intérêt</SimpleGetter>
+            <SimpleGetter funcName={projectPriceInDollars} argsProp={[]} label={"Project price : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setProjectPrice}>$</SimpleGetter>
+            <SimpleGetter funcName={bestFeeRateIPB} argsProp={[]} label={"Marckup : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setFeeRate}>% sur Intérêt</SimpleGetter>
           </div></div>
 
         <p className="p-3">Voici vos rôles : Super Admin = {`${isSuperAdmin}`}, Administrateur fonctionnel = {`${isDefaultAdmin}`}, Opérateur = {`${isOperator}`}, Blacklist = {`${isBlacklist}`}</p>
@@ -118,6 +122,8 @@ const Master = ({ userAddress, isConnected }) => {
                 </div>
               </div>
             </div>
+                  <CreateProject refetch={refetchEverthing} bestFeeRate={feeRate} projectPriceInDol={projectPriceInDol} userAddress={userAddress} ></CreateProject>
+
           </div>}
 
 

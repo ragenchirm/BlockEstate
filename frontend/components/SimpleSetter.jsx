@@ -6,10 +6,9 @@ import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
 import { contractMasterAbi, contractMasterAddress, contractStableAbi, contractProjectAbi, MASTER, PROJECT, STABLE, contractStableAddress, setProjectPriceInDollars, investInProject, adminWithdraw, askForARefund, adminDeposit, setFeeRate } from "@/constants";
 
-const { address } = useAccount;
-
 
 const SimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labelPlaceHolder, contractAdressProp, argsProp }) => {
+    const { address } = useAccount();
     let abi = null, contractAddress = null;
     //set contract address and abi
     if (contract == MASTER) {

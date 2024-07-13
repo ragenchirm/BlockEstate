@@ -2,9 +2,10 @@
 import { useReadContract, useAccount} from "wagmi";
 import { useEffect } from "react";
 import { STABLE, MASTER, PROJECT, contractMasterAbi, contractMasterAddress, contractStableAbi, contractStableAddress, contractProjectAbi, bestFeeRateIPB, projectPriceInDollars, balanceOf, interestRateIPB, totalSupply, allowed, totalAmountWithInterest } from "@/constants";
-const { userAddress } = useAccount;
+
 
 const SilenceGetter = ({funcName, argsProp, refetchToggle, contract, children, addressProp, giveState}) => {
+  const { userAddress } = useAccount();
   let abi = null, contractAddress = null;
   let sixDecimals = (funcName == balanceOf || funcName == totalSupply || funcName == allowed || funcName == totalAmountWithInterest);
   let ipb = (funcName == bestFeeRateIPB || funcName == interestRateIPB)
