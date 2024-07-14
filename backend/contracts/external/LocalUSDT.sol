@@ -418,7 +418,7 @@ contract TetherToken is Pausable, StandardToken, BlackList {
         balances[owner] = _initialSupply;
         deprecated = false;
 
-        //###############################################################
+        //################################################################
         //################## Locally Added ##############################
         //###############################################################
         // This part is added to fund local addresses, in order to be able to test contract interactions with funded addresses
