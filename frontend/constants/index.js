@@ -1,9 +1,9 @@
 import {keccak256} from "viem";
-export const contractStableAddress = "0x06786bCbc114bbfa670E30A1AC35dFd1310Be82f"; // sur Hardhat
-export const contractMasterAddress = "0x72F853E9E202600c5017B5A060168603c3ed7368"; // sur Hardhat
+// export const contractStableAddress = "0x06786bCbc114bbfa670E30A1AC35dFd1310Be82f"; // sur Hardhat
+// export const contractMasterAddress = "0x72F853E9E202600c5017B5A060168603c3ed7368"; // sur Hardhat
 
-// export const contractStableAddress = "0x1eC919F20884Cb2D2E54a8E7f9fA86020e89d2aE"; // sur Holesky
-// export const contractMasterAddress = "0xec107160FF4Be49638E69f4038620D5C8be99AC4"; // sur Holesky
+export const contractStableAddress = "0x1eC919F20884Cb2D2E54a8E7f9fA86020e89d2aE"; // sur Holesky
+export const contractMasterAddress = "0xec107160FF4Be49638E69f4038620D5C8be99AC4"; // sur Holesky
 
 
 //Set Constants

@@ -56,7 +56,7 @@ const Master = ({ userAddress, isConnected }) => {
   const setUSDTcontractAdress = (_data) => {
     setContractUSDTAddress(_data);
   }
-  const setFeeRate = (_data) => {
+  const setTheFeeRate = (_data) => {
     setFeeRateS(_data);
   }
   const setProjectPrice = (_data) => {
@@ -93,7 +93,7 @@ const Master = ({ userAddress, isConnected }) => {
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <SimpleGetter funcName={balanceOf} argsProp={[contractMasterAddress]} label={"USDT Contract Balance : "} userAddress={userAddress} contract={STABLE} refetchToggle={refetchToggle} giveState={setUSDTcontractBalance}>$</SimpleGetter>
             <SimpleGetter funcName={projectPriceInDollars} argsProp={[]} label={"Project price : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setProjectPrice}>$</SimpleGetter>
-            <SimpleGetter funcName={bestFeeRateIPB} argsProp={[]} label={"Marckup : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setFeeRate}>% sur Intérêt</SimpleGetter>
+            <SimpleGetter funcName={bestFeeRateIPB} argsProp={[]} label={"Marckup : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setTheFeeRate}>% sur Intérêt</SimpleGetter>
           </div></div>
 
         <p className="p-3">Voici vos rôles : Super Admin = {`${isSuperAdmin}`}, Administrateur fonctionnel = {`${isDefaultAdmin}`}, Opérateur = {`${isOperator}`}, Blacklist = {`${isBlacklist}`}</p>

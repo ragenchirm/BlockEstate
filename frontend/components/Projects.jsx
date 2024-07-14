@@ -24,8 +24,9 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
     let [newUserBalance, setNewUserBalance] = useState(null);
     const [newProjectStatus, setNewProjectStatus] = useState(null);
     const [newProjectBalance, setNewProjectBalance] = useState(null);
+    const [newProjectName, setNewProjectName] = useState(null);
     const [newAmountWithInterest, setNewAmountWithInterest] = useState(null);
-    
+
 
     const { data: getProject, error: projectError, isLoading: isProjectLoading, refetch: refetchProject } = useReadContract({
         abi: contractMasterAbi,
@@ -43,15 +44,18 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
     const setProjectStatus = async (_data) => {
         await setNewProjectStatus(_data);
     };
+    const setProjectName = async (_data) => {
+        await setNewProjectName(_data);
+    };
     const setUserBalance = async (_data) => {
         await setNewUserBalance(_data);
     };
     const setAmountWithInterest = async (_data) => {
         await setNewAmountWithInterest(_data);
-    }; 
+    };
     const setProjectBalance = async (_data) => {
         await setNewProjectBalance(_data);
-    }; 
+    };
 
     const refetchAProject = async () => {
         await refetchProject();
@@ -93,14 +97,14 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
                         <li className="hover:bg-orange-200 cursor-pointer bg-orange-50 text-[#F8F4E3] mx-4 my-3 rounded px-5 flex justify-between items-center w-full" key={_projAdr} onClick={() => handleClickProject(_projAdr)} >
                             <div >
                                 <p className="text-lg font-bold text-[#706C61] my-1">Projet n° {i + 1} : </p>
-                               
+
                                 <img src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
                                 <SimpleGetter funcName={name} label={"Nom : "} userAddress={userAddress} contract={PROJECT} addressProp={_projAdr} refetchToggle={refetchToggle} ></SimpleGetter>
                                 <SimpleGetter funcName={totalSupply} label={"Montant à collecter : "} userAddress={userAddress} contract={PROJECT} addressProp={_projAdr} refetchToggle={refetchToggle} >$</SimpleGetter>
                                 <SimpleGetter funcName={interestRateIPB} label={"Intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={_projAdr} refetchToggle={refetchToggle} >%</SimpleGetter>
                                 <SimpleGetter funcName={projectDeadline} label={"Durée prévisionnelle : "} userAddress={userAddress} contract={PROJECT} addressProp={_projAdr} refetchToggle={refetchToggle} >jours</SimpleGetter>
                                 <SimpleGetter funcName={desc_link} label={"Site : "} userAddress={userAddress} contract={PROJECT} addressProp={_projAdr} refetchToggle={refetchToggle} ></SimpleGetter>
-                                <p className="text-[#706C61]">{_projAdr}</p>
+                                <p className="text-[#706C61]"> Addresse projet : {_projAdr}</p>
                             </div>
                         </li>
                     ))}
@@ -108,21 +112,28 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
             </ol>
             {projectSelected &&
                 <div className="flex flex-col justify-between items-center w-full my-6 py-6 bg-orange-50 rounded-xl">
-                    <SimpleGetter funcName={name} label={"Nom : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SimpleGetter>
-                    {newProjectStatus==3 &&
-                    <p className="text-lime-500 text-4xl p-5">Ce projet est terminé - vous pouvez demander votre remboursement</p>}
+                    <SilenceGetter giveState={setProjectName} funcName={name} label={"Nom : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SilenceGetter>
+                    <h1 className="text-5xl text-green-800">{`${newProjectName}`}</h1>
+                    {newProjectStatus == 3 &&
+                        <p className="text-lime-500 text-4xl p-5">Ce projet est terminé - vous pouvez demander votre remboursement</p>}
                     {isOperator &&
                         <h1 className="text-xl text-green-800">Vous êtes opérateur de ce projet</h1>}
                     <img className="py-3" src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
-                    <div className="p-5 my-5 bg-orange-50 border rounded-md border-black border-solid">
-                        <SimpleGetter funcName={totalSupply} label={"Montant à collecter : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >$</SimpleGetter>
-                        <SimpleGetter funcName={interestRateIPB} label={"Intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >%</SimpleGetter>
-                        <SimpleGetter funcName={bestFeeRateIPB} label={"Frais sur Intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >%</SimpleGetter>
-                        <SimpleGetter funcName={projectDeadline} label={"Durée prévisionnelle : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >jours</SimpleGetter>
-                        <SimpleGetter funcName={desc_link} label={"Site : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SimpleGetter>
-                    
 
-                    <SimpleGetter funcName={balanceOf} label={"Vos obligations : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[userAddress]} giveState={setUserBalance} >BEST</SimpleGetter>
+                    <div className="flex flex-row justify-center items-center w-full my-6 py-6 bg-orange-50 rounded-xl px-10 mx-10">
+                        <div className="p-5 my-5 mx-10 bg-orange-50 border rounded-md border-black border-solid">
+                            <SimpleGetter funcName={interestRateIPB} label={"Intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >%</SimpleGetter>
+                            <SimpleGetter funcName={bestFeeRateIPB} label={"Frais sur Intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >%</SimpleGetter>
+                        </div>
+                        <div className="p-5 mx-10 my-5 bg-orange-50 border rounded-md border-black border-solid">
+                            <SimpleGetter funcName={totalSupply} label={"Montant à collecter : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >$</SimpleGetter>
+                            <SilenceGetter funcName={balanceOf} label={"Vos obligations = "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[userAddress]} giveState={setUserBalance} >BEST Tokens</SilenceGetter>
+                            <p className="text-green-700 text-xl">Vous détenez {newUserBalance} BEST Tokens</p>
+                        </div>
+                        <div className="p-5 mx-10 my-5 bg-orange-50 border rounded-md border-black border-solid">
+                            <SimpleGetter funcName={projectDeadline} label={"Durée prévisionnelle : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >jours</SimpleGetter>
+                            <SimpleGetter funcName={desc_link} label={"Site : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SimpleGetter>
+                        </div>
                     </div>
 
                     {newProjectStatus == 0 &&
@@ -131,24 +142,29 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
                             <SimpleGetter funcName={balanceOf} label={"Reste à investir : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[projectSelected]} >$</SimpleGetter>
                             <InvestInProject funcName={investInProject} refetch={refetch} userAddress={userAddress} projectAddress={projectSelected} label={"Investir"} labelPlaceHolder={"Montant à investir"}></InvestInProject>
                             <SimpleSetter refetch={refetch} funcName={askForARefund} contract={PROJECT} contractAdressProp={projectSelected} label={"Demander un remboursement"} labelTitle={"Retirer %"} labelPlaceHolder={"Montant à retirer"}></SimpleSetter>
+
                         </>
                     }
-                     {newProjectStatus==3 &&
-                    <p className="text-lime-500 text-4xl p-5">Ce projet est terminé - vous pouvez demander votre remboursement</p>}
+                    {newProjectStatus == 3 &&
+                        <p className="text-lime-500 text-4xl p-5">Ce projet est terminé - vous pouvez demander votre remboursement</p>}
                     {(newProjectStatus == 2 & isOperator) &&
-                        <div className="p-5 my-5 bg-orange-50 border rounded-md border-black border-solid">
-                            <h1 className="text-xl text-green-800">Vous êtes opérateur de ce projet</h1>
-                            <SimpleGetter funcName={totalAmountWithInterest} label={"Montant total à rembourser avec intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} giveState={setAmountWithInterest} >$</SimpleGetter>
-                            <SimpleGetter funcName={balanceOf} label={"Solde du projet :  "} userAddress={userAddress} contract={STABLE} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[projectSelected]} giveState={setProjectBalance} >$</SimpleGetter>
+                        <>
+                            <div className="p-5 my-5 bg-orange-50 border rounded-md border-black border-solid">
+                                <h1 className="text-xl text-green-800">Vous êtes opérateur de ce projet</h1>
+                                <SimpleGetter funcName={totalAmountWithInterest} label={"Montant total à rembourser avec intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} giveState={setAmountWithInterest} >$</SimpleGetter>
+                                <SimpleGetter funcName={balanceOf} label={"Solde du projet :  "} userAddress={userAddress} contract={STABLE} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[projectSelected]} giveState={setProjectBalance} >$</SimpleGetter>
 
-                            <SimpleSetter refetch={refetch} funcName={adminWithdraw} contract={PROJECT} contractAdressProp={projectSelected} label={"Retirer des fonds"} labelTitle={"Retirer"} labelPlaceHolder={"Montant à retirer"}>$</SimpleSetter>
-                            <InvestInProject funcName={adminDeposit} refetch={refetch} userAddress={userAddress} projectAddress={projectSelected} label={"Déposer"} labelPlaceHolder={"Montant à déposer"}></InvestInProject>
-                            <VerySimpleSetter refetch={refetch} funcName={finishProject} contract={PROJECT} contractAdressProp={projectSelected} label={"Terminer le projet"} labelTitle={"Cloturer"} disabledProp={newProjectBalance!=newAmountWithInterest}></VerySimpleSetter>
-                        </div>
+                                <SimpleSetter refetch={refetch} funcName={adminWithdraw} contract={PROJECT} contractAdressProp={projectSelected} label={"Retirer des fonds"} labelTitle={"Retirer"} labelPlaceHolder={"Montant à retirer"}>$</SimpleSetter>
+                                <InvestInProject funcName={adminDeposit} refetch={refetch} userAddress={userAddress} projectAddress={projectSelected} label={"Déposer"} labelPlaceHolder={"Montant à déposer"}></InvestInProject>
+                                <VerySimpleSetter refetch={refetch} funcName={finishProject} contract={PROJECT} contractAdressProp={projectSelected} label={"Cloturer le projet"} labelTitle={"Cloturer"} disabledProp={newProjectBalance < newAmountWithInterest}></VerySimpleSetter>
+                                {(newProjectBalance < newAmountWithInterest) && <p className="text-black" p-5> Pour cloturer le projet, merci de déposer les fond suffisants</p>}
+                            </div>
+
+                        </>
                     }
-                    {(newProjectStatus == 3 & newUserBalance !=0) &&
-                     <VerySimpleSetter refetch={refetch} funcName={claimFundsWithInterest} contract={PROJECT} contractAdressProp={projectSelected} label={"Retirer mes fonds avec intérêts"} labelTitle={"Retirer"} disabledProp={newProjectBalance!=newAmountWithInterest}></VerySimpleSetter>
-                     }
+                    {(newProjectStatus == 3 & newUserBalance != 0) &&
+                        <VerySimpleSetter refetch={refetch} funcName={claimFundsWithInterest} contract={PROJECT} contractAdressProp={projectSelected} label={"Retirer mes fonds avec intérêts"} labelTitle={"Retirer"} ></VerySimpleSetter>
+                    }
 
 
 
