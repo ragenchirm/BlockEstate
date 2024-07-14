@@ -7,7 +7,7 @@ import InvestInProject from "./InvestInProject";
 import SimpleSetter from "./SimpleSetter";
 import VerySimpleSetter from "./VerySimpleSetter";
 
-const Projects = ({ refetchToggle, refetch, userAddress }) => {
+const Projects = ({ refetchToggle, refetch, userAddress, isConnected }) => {
     // const { address, isConnected } = useAccount();
     const projectStates = [
         "Financement ouvert",
@@ -110,7 +110,7 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
                     ))}
                 </div>
             </ol>
-            {projectSelected &&
+            {(projectSelected && isConnected) &&
                 <div className="flex flex-col justify-between items-center w-full my-6 py-6 bg-orange-50 rounded-xl">
                     <SilenceGetter giveState={setProjectName} funcName={name} label={"Nom : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SilenceGetter>
                     <h1 className="text-5xl text-green-800">{`${newProjectName}`}</h1>

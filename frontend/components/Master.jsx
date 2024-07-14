@@ -64,23 +64,21 @@ const Master = ({ userAddress, isConnected }) => {
   }
 
 
-  if (!isOnExpectedNetwork) {
-    return (
-      <div>
-        <Alert className="bg-orange-400 text-black mb-2">
-          <AlertTitle>NETWORK ERROR</AlertTitle>
-          <AlertDescription>
-            Please connect to the expected network. You are actually on the
-            network ID: {chainId} and you need to be on the expected network ID:{" "}
-            {HARDHAT_EXPECTED_NETWORK_ID} for HardHat or {SEPOLIA_EXPECTED_NETWORK_ID} for Sepolia
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   return (
     <div>
+      {!isOnExpectedNetwork&&
+      <div>
+      <Alert className="bg-orange-400 text-black mb-2">
+        <AlertTitle>NETWORK ERROR</AlertTitle>
+        <AlertDescription>
+          Please connect to the expected network. You are actually on the
+          network ID: {chainId} and you need to be on the expected network ID:{" "}
+          {HARDHAT_EXPECTED_NETWORK_ID} for HardHat or {SEPOLIA_EXPECTED_NETWORK_ID} for Sepolia
+        </AlertDescription>
+      </Alert>
+    </div>
+      }
       <div className="flex flex-col justify-between items-center p-5">
         <h1 className="text-4xl font-extrabold text-[#F8F4E3]">
           Bienvenue sur Block Estate
@@ -134,7 +132,7 @@ const Master = ({ userAddress, isConnected }) => {
             </div>
             </div>
         </>}
-        <Projects refetch={refetchEverything} refetchToggle={refetchToggle} userAddress={userAddress}></Projects>
+        <Projects refetch={refetchEverything} refetchToggle={refetchToggle} userAddress={userAddress} isConnected={isConnected}></Projects>
 
       </div>
 
