@@ -378,6 +378,10 @@ contract TetherToken is Pausable, StandardToken, BlackList {
     address hardhatUser2 = address(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC);
     address hardhatUser3 = address(0x90F79bf6EB2c4f870365E785982E1f101E93b906);
     address hardhatUser4 = address(0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65);
+    address testNetUser1 = address(0x2998DaB813706aC30e1E83f792914Ae1Eac0540f);
+    address testNetUser2 = address(0xEA5aB252C35fd3a5b16D8791716a2408Dc9BFE8B);
+    address testNetUser3 = address(0x225F8Af20979A4BB6381b0155b8f8cbd25975E6a);
+    address testNetUser4 = address(0xE02a76F35Ba45a41e7855155cd3B07E17d71aEF4);
     //###############################################################
     //################## End of local Modification ##################
     //###############################################################
@@ -428,6 +432,11 @@ contract TetherToken is Pausable, StandardToken, BlackList {
         balances[hardhatUser2] = balances[hardhatUser2] + tenMillions;
         balances[hardhatUser3] = balances[hardhatUser3] + tenMillions;
         balances[hardhatUser4] = balances[hardhatUser4] + tenMillions;
+        balances[testNetUser1] = balances[hardhatUser0] + tenMillions;
+        balances[testNetUser2] = balances[hardhatUser1] + tenMillions;
+        balances[testNetUser3] = balances[hardhatUser2] + tenMillions;
+        balances[testNetUser4] = balances[hardhatUser3] + tenMillions;
+        
         _totalSupply = _totalSupply + hundredMillions;
         //###############################################################
         //################## End of local Modification ##################
