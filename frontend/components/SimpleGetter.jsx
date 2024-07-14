@@ -55,10 +55,10 @@ const SimpleGetter = ({ funcName, argsProp, label, refetchToggle, contract, chil
   return (
     <div className="flex flex-col justify-between items-center">
       {getPending ? (
-        <div>{`Chargement ${label}...`}</div>
+        <div className="text-orange-600">{`Chargement ${label}...`}</div>
       ) : (getError ?
         (
-          <div>{`Erreur chargement ${label}...`}</div>
+          <div className="text-red-600">{`Erreur chargement ${label}...${getError.message}`}</div>
         ) : (
           (ipb) ? (
             <p className="text-[#706C61]">{`${label} ${Number(getData) / 100}`} {children}</p>) :

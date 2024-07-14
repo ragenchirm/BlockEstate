@@ -1,14 +1,25 @@
-import { STABLE, MASTER, PROJECT, contractMasterAbi, contractMasterAddress, contractStableAbi, contractStableAddress, contractProjectAbi, bestFeeRateIPB, projectPriceInDollars, balanceOf, interestRateIPB, totalSupply, allowed, totalAmountWithInterest, bestProjectsAddresses, name, projectDeadline, desc_link } from "@/constants";
+import { STABLE, MASTER, PROJECT, contractMasterAbi, contractMasterAddress, contractStableAbi, contractStableAddress, contractProjectAbi, bestFeeRateIPB, projectPriceInDollars, balanceOf, interestRateIPB, totalSupply, allowed, totalAmountWithInterest, bestProjectsAddresses, name, projectDeadline, desc_link, projectStatus, hasRole, OPERATOR_ROLE, DEFAULT_ADMIN_ROLE } from "@/constants";
 import { useReadContract, useAccount } from "wagmi";
 import { useEffect, useState } from "react";
 import SimpleGetter from "./SimpleGetter";
+import SilenceGetter from "./SilenceGetter";
+import InvestInProject from "./InvestInProject";
 
-const Projects = ({ refetchToggle }) => {
+const Projects = ({ refetchToggle, refetch, userAddress }) => {
+   // const { address, isConnected } = useAccount();
+    const projectStates = [
+        "Financement ouvert",
+        "Annulé",
+        "Projet en cours",
+        "Projet terminé",
+    ];
 
-    let [projectIndex, setProjectIndex] = useState(0);
+    let [projectIndex, setProjectIndex] = useState(null);
     const [project, setProject] = useState();
     const [projects, setProjects] = useState([]);
-    const { userAddress, isConnected } = useAccount();
+    const [projectSelected, setProjectSelected] = useState(null);
+    let [isOperator, setNewIsOperator] = useState(null);
+    const [newProjectStatus, setNewProjectStatus] = useState(null);
 
     const { data: getProject, error: projectError, isLoading: isProjectLoading, refetch: refetchProject } = useReadContract({
         abi: contractMasterAbi,
@@ -18,8 +29,14 @@ const Projects = ({ refetchToggle }) => {
         account: userAddress
     });
 
-
-
+    const setIsOperator = async (_data) => {
+        console.log("SET OOOOOPERATOR "+_data)
+        await setNewIsOperator(_data);
+        console.log("OPERA "+isOperator)
+    };
+    const setProjectStatus = async (_data) => {
+        await setNewProjectStatus(_data);
+    };
 
     const refetchAProject = async () => {
         await refetchProject();
@@ -27,7 +44,7 @@ const Projects = ({ refetchToggle }) => {
 
     useEffect(() => {
         if (projectError) {
-            console.log('Proposal error, on s\'arrete' + (projectError.shortMessage || projectError.message))
+            console.log('Project error, on s\'arrete' + (projectError.shortMessage || projectError.message))
         } else
             if (isProjectLoading === false && getProject != undefined && getProject != projects.findLast(e => e)) {
                 setProject(getProject)
@@ -43,9 +60,11 @@ const Projects = ({ refetchToggle }) => {
 
     }, [refetchToggle])
 
-    const handleClickProject = async ()=>{
-        console.log("OCUCOU")
+    const handleClickProject = async (selectProjectAddress) => {
+        setProjectSelected(selectProjectAddress);
+        //refetchEverything();
     }
+   
 
 
 
@@ -56,7 +75,7 @@ const Projects = ({ refetchToggle }) => {
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {projects.map((_projAdr, i) => (
-                        <li className="bg-orange-50 text-[#F8F4E3] mx-4 my-3 rounded px-5 flex justify-between items-center w-full"  key={_projAdr} onClick={handleClickProject}>
+                        <li className="hover:bg-orange-200 cursor-pointer bg-orange-50 text-[#F8F4E3] mx-4 my-3 rounded px-5 flex justify-between items-center w-full" key={_projAdr} onClick={() => handleClickProject(_projAdr)} >
                             <div >
                                 <p className="text-lg font-bold text-[#706C61] my-1">Projet n° {i + 1} : </p>
                                 <img src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
@@ -71,6 +90,36 @@ const Projects = ({ refetchToggle }) => {
                     ))}
                 </div>
             </ol>
+            {projectSelected &&
+                <div className="flex flex-col justify-between items-center w-full my-6 py-6 bg-orange-50 rounded-xl">
+                    <SimpleGetter funcName={name} label={"Nom : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SimpleGetter>
+                    {isOperator&&
+                                <h1 className="text-xl text-green-800">Vous êtes opérateur de ce projet</h1>}
+                    <img className="py-3" src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
+
+                    <SimpleGetter funcName={totalSupply} label={"Montant à collecter : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >$</SimpleGetter>
+                    <SimpleGetter funcName={interestRateIPB} label={"Intérêts : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >%</SimpleGetter>
+                    <SimpleGetter funcName={projectDeadline} label={"Durée prévisionnelle : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} >jours</SimpleGetter>
+                    <SimpleGetter funcName={desc_link} label={"Site : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SimpleGetter>
+                    <SimpleGetter funcName={balanceOf} label={"Reste à investir : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[projectSelected]} ></SimpleGetter>
+                    <SimpleGetter funcName={balanceOf} label={"Vos obligations : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[userAddress]} ></SimpleGetter>
+                    <InvestInProject refetch={refetch} userAddress={userAddress} projectAddress={projectSelected}></InvestInProject>
+             
+
+                    
+                    {/* Statut du projet */}
+                    <h3 className="text-[#706C61] text-xl p-5"> Statut du projet : </h3>
+                    <div className="flex space-x-8">
+                    {projectStates.map((state, index) => (
+                        <div key={index}
+                            className={`p-4 rounded-md text-center flex-1 ${index === newProjectStatus ? "bg-lime-800 text-white" : "bg-gray-200 text-gray-500"}`}>
+                            {state}
+                        </div>
+                    ))}</div>
+                    <p className="text-[#706C61] p-5">{projectSelected} </p>
+                    <SilenceGetter funcName={projectStatus}  userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} giveState={setProjectStatus} > </SilenceGetter>
+                    <SilenceGetter funcName={hasRole} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} giveState={setIsOperator} argsProp={[DEFAULT_ADMIN_ROLE, userAddress]}> </SilenceGetter>
+                </div>}
         </div>
         </>)
 

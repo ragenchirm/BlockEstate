@@ -29,10 +29,10 @@ const Master = ({ userAddress, isConnected }) => {
   const [userUSDTBalance, setUserUSDTBalance] = useState(null);
   const [contractUSDTBalance, setContractUSDTBalance] = useState(0);
   const [contractUSDTAddress, setContractUSDTAddress] = useState(null);
-  const [feeRate, setFeeRateS]=useState(null);
-  const [projectPriceInDol, setProjectPriceS]=useState(0);
+  const [feeRate, setFeeRateS] = useState(null);
+  const [projectPriceInDol, setProjectPriceS] = useState(0);
 
-  const refetchEverthing = () => {
+  const refetchEverything = () => {
     setRefetchToggle(!refetchToggle);
   }
   const setSuperAdmin = (_data) => {
@@ -105,40 +105,44 @@ const Master = ({ userAddress, isConnected }) => {
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {isSuperAdmin &&
                 <div className="border rounded-md border-red-700 border-solid p-3">
-                  <SimpleSetter refetch={refetchEverthing} funcName={grantRole} contract={MASTER} labelTitle={"Donner droit d'administrateur fonctionnel"} label={"Donner droit d'admin"} labelPlaceHolder={"Addresse à autoriser"} argsProp={[DEFAULT_ADMIN_ROLE]}></SimpleSetter></div>}
+                  <SimpleSetter refetch={refetchEverything} funcName={grantRole} contract={MASTER} labelTitle={"Donner droit d'administrateur fonctionnel"} label={"Donner droit d'admin"} labelPlaceHolder={"Addresse à autoriser"} argsProp={[DEFAULT_ADMIN_ROLE]}></SimpleSetter></div>}
               <div className="border rounded-md border-orange-400 border-solid p-3">
                 {isDefaultAdmin &&
                   <div className=" p-3">
-                    <SimpleSetter refetch={refetchEverthing} funcName={grantRole} contract={MASTER} labelTitle={"Whitelister opérateur"} label={"Autoriser addresse"} labelPlaceHolder={"Addresse opérateur"} argsProp={[OPERATOR_ROLE]}></SimpleSetter></div>}
+                    <SimpleSetter refetch={refetchEverything} funcName={grantRole} contract={MASTER} labelTitle={"Whitelister opérateur"} label={"Autoriser addresse"} labelPlaceHolder={"Addresse opérateur"} argsProp={[OPERATOR_ROLE]}></SimpleSetter></div>}
                 {isDefaultAdmin &&
                   <div className="p-3">
-                    <SimpleSetter refetch={refetchEverthing} funcName={grantRole} contract={MASTER} labelTitle={"Blacklister une addresse"} label={"Blacklister addresse"} labelPlaceHolder={"Addresse à blacklister"} argsProp={[BLACKLIST_ROLE]}></SimpleSetter></div>}
+                    <SimpleSetter refetch={refetchEverything} funcName={grantRole} contract={MASTER} labelTitle={"Blacklister une addresse"} label={"Blacklister addresse"} labelPlaceHolder={"Addresse à blacklister"} argsProp={[BLACKLIST_ROLE]}></SimpleSetter></div>}
               </div>
               <div className="border rounded-md border-orange-400 border-solid p-3">
                 <div className=" p-3">
-                  <SimpleSetter refetch={refetchEverthing} funcName={setProjectPriceInDollars} contract={MASTER} label={"Changer Prix"} labelTitle={"Changer prix projet"} labelPlaceHolder={"Nouveaux prix en $"}></SimpleSetter>
+                  <SimpleSetter refetch={refetchEverything} funcName={setProjectPriceInDollars} contract={MASTER} label={"Changer Prix"} labelTitle={"Changer prix projet"} labelPlaceHolder={"Nouveaux prix en $"}></SimpleSetter>
                 </div>
                 <div className=" p-3">
-                  <SimpleSetter refetch={refetchEverthing} funcName={setFeeRate} contract={MASTER} label={"Changer Marckup"} labelTitle={"Marckup %"} labelPlaceHolder={"Nouveau marckup"}></SimpleSetter>
+                  <SimpleSetter refetch={refetchEverything} funcName={setFeeRate} contract={MASTER} label={"Changer Marckup"} labelTitle={"Marckup %"} labelPlaceHolder={"Nouveau marckup"}></SimpleSetter>
                 </div>
               </div>
             </div>
-                  <CreateProject refetch={refetchEverthing} bestFeeRate={feeRate} projectPriceInDol={projectPriceInDol} userAddress={userAddress} ></CreateProject>
 
           </div>}
-          <Projects refetchToggle={refetchToggle}></Projects>
-      
-      
-      
-      
+
+        {(isOperator) &&
+        <><p className="text-lg font-bold text-[#706C61] my-1 py-2">Créer un projet </p>
+          <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <CreateProject refetch={refetchEverything} bestFeeRate={feeRate} projectPriceInDol={projectPriceInDol} userAddress={userAddress} ></CreateProject>
+            </div></div>
+        </>}
+        <Projects refetch={refetchEverything} refetchToggle={refetchToggle} userAddress={userAddress}></Projects>
+
       </div>
-      
+
       {/* SILENCE GETTERS */}
       <SilenceGetter funcName={hasRole} argsProp={[SUPER_ADMIN_ROLE, userAddress]} label={"Super Admin : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setSuperAdmin}></SilenceGetter>
-        <SilenceGetter funcName={hasRole} argsProp={[DEFAULT_ADMIN_ROLE, userAddress]} label={"Admin : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setDefaultAdmin}></SilenceGetter>
-        <SilenceGetter funcName={hasRole} argsProp={[OPERATOR_ROLE, userAddress]} label={"Operateur : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setOperator}></SilenceGetter>
-        <SilenceGetter funcName={hasRole} argsProp={[BLACKLIST_ROLE, userAddress]} label={"Blacklist : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setBlacklist}></SilenceGetter>
-        <SilenceGetter funcName={balanceOf} argsProp={[userAddress]} userAddress={userAddress} contract={STABLE} refetchToggle={refetchToggle} giveState={setUserUsBalance}>$</SilenceGetter >
+      <SilenceGetter funcName={hasRole} argsProp={[DEFAULT_ADMIN_ROLE, userAddress]} label={"Admin : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setDefaultAdmin}></SilenceGetter>
+      <SilenceGetter funcName={hasRole} argsProp={[OPERATOR_ROLE, userAddress]} label={"Operateur : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setOperator}></SilenceGetter>
+      <SilenceGetter funcName={hasRole} argsProp={[BLACKLIST_ROLE, userAddress]} label={"Blacklist : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setBlacklist}></SilenceGetter>
+      <SilenceGetter funcName={balanceOf} argsProp={[userAddress]} userAddress={userAddress} contract={STABLE} refetchToggle={refetchToggle} giveState={setUserUsBalance}>$</SilenceGetter >
       <AlertInfo chainId={chainId} />
     </div>
   );
