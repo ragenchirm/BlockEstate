@@ -21,6 +21,7 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
     const [projects, setProjects] = useState([]);
     const [projectSelected, setProjectSelected] = useState(null);
     let [isOperator, setNewIsOperator] = useState(null);
+    let [newUserBalance, setNewUserBalance] = useState(null);
     const [newProjectStatus, setNewProjectStatus] = useState(null);
     const [newProjectBalance, setNewProjectBalance] = useState(null);
     const [newAmountWithInterest, setNewAmountWithInterest] = useState(null);
@@ -41,6 +42,9 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
     };
     const setProjectStatus = async (_data) => {
         await setNewProjectStatus(_data);
+    };
+    const setUserBalance = async (_data) => {
+        await setNewUserBalance(_data);
     };
     const setAmountWithInterest = async (_data) => {
         await setNewAmountWithInterest(_data);
@@ -118,7 +122,7 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
                         <SimpleGetter funcName={desc_link} label={"Site : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} ></SimpleGetter>
                     
 
-                    <SimpleGetter funcName={balanceOf} label={"Vos obligations : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[userAddress]} >BEST</SimpleGetter>
+                    <SimpleGetter funcName={balanceOf} label={"Vos obligations : "} userAddress={userAddress} contract={PROJECT} addressProp={projectSelected} refetchToggle={refetchToggle} argsProp={[userAddress]} giveState={setUserBalance} >BEST</SimpleGetter>
                     </div>
 
                     {newProjectStatus == 0 &&
@@ -129,6 +133,8 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
                             <SimpleSetter refetch={refetch} funcName={askForARefund} contract={PROJECT} contractAdressProp={projectSelected} label={"Demander un remboursement"} labelTitle={"Retirer %"} labelPlaceHolder={"Montant à retirer"}></SimpleSetter>
                         </>
                     }
+                     {newProjectStatus==3 &&
+                    <p className="text-lime-500 text-4xl p-5">Ce projet est terminé - vous pouvez demander votre remboursement</p>}
                     {(newProjectStatus == 2 & isOperator) &&
                         <div className="p-5 my-5 bg-orange-50 border rounded-md border-black border-solid">
                             <h1 className="text-xl text-green-800">Vous êtes opérateur de ce projet</h1>
@@ -140,7 +146,7 @@ const Projects = ({ refetchToggle, refetch, userAddress }) => {
                             <VerySimpleSetter refetch={refetch} funcName={finishProject} contract={PROJECT} contractAdressProp={projectSelected} label={"Terminer le projet"} labelTitle={"Cloturer"} disabledProp={newProjectBalance!=newAmountWithInterest}></VerySimpleSetter>
                         </div>
                     }
-                    {(newProjectStatus == 3) &&
+                    {(newProjectStatus == 3 & newUserBalance !=0) &&
                      <VerySimpleSetter refetch={refetch} funcName={claimFundsWithInterest} contract={PROJECT} contractAdressProp={projectSelected} label={"Retirer mes fonds avec intérêts"} labelTitle={"Retirer"} disabledProp={newProjectBalance!=newAmountWithInterest}></VerySimpleSetter>
                      }
 
