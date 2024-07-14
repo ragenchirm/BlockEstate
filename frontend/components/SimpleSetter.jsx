@@ -59,7 +59,6 @@ const SimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labelPla
         else {
             await setData(newData);
         }
-
     };
 
     const handleChangeNewData = (e) => {
@@ -93,6 +92,7 @@ const SimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labelPla
             toast({
                 title: `${label} loading`,
                 description: `Nous inscrivons votre transaction ${label} dans la blockchain...`,
+                className: "bg-orange-600 text-slate-950",
                 status: "loading",
                 duration: 3000,
             });

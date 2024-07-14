@@ -1,9 +1,10 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Link from "next/link"
 
 const Header = () => {
   return (
     <div className="flex justify-between items-center w-full p-5 bg-[#706C61]">
-      <div>BockEstate&copy;</div>
+      <Link href="/" >BockEstate&copy;</Link>
       <div>
         <ConnectButton />
       </div>

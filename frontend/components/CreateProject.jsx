@@ -15,14 +15,13 @@ const CreateProject = ({ refetch, bestFeeRate, projectPriceInDol, userAddress })
     const { data: setDataHash, isPending: setDataIsPending, error: setDataError, writeContract: writeSetData } = useWriteContract();
     const { isLoading: TXsetDataLoading, isSuccess: TXsetDataSuccess, error: TXsetDataError } = useWaitForTransactionReceipt({ hash: setDataHash });
     const setData = async () => {
-        console.log("user address : "+userAddress)
-        console.log("dans set data "+newData);
             writeSetData({
                 address: contractMasterAddress,
                 abi: contractMasterAbi,
                 functionName: createProject,
                 args: newData,
                 account: userAddress,
+                error: setDataError
             });
     };
 
@@ -98,7 +97,7 @@ const setApprove0 = async () => {
         if (TXsetApprove0Error) {
             toast({
                 title: "Erreur",
-                description: TXsetDataError.message,
+                description: TXsetApprove0Error.message,
                 status: "error",
                 className: "bg-red-600 text-slate-950",
                 duration: 3000,
@@ -108,6 +107,7 @@ const setApprove0 = async () => {
             toast({
                 title: `Approve is loading`,
                 description: `Nous inscrivons votre transaction Approve dans la blockchain...`,
+                className: "bg-orange-600 text-slate-950",
                 status: "loading",
                 duration: 3000,
             });
@@ -127,7 +127,7 @@ const setApprove0 = async () => {
         if (TXsetApproveError) {
             toast({
                 title: "Erreur",
-                description: TXsetDataError.message,
+                description: TXsetApproveError.message,
                 status: "error",
                 className: "bg-red-600 text-slate-950",
                 duration: 3000,
@@ -137,6 +137,7 @@ const setApprove0 = async () => {
             toast({
                 title: `Approve is loading`,
                 description: `Nous inscrivons votre transaction Approve dans la blockchain...`,
+                className: "bg-orange-600 text-slate-950",
                 status: "loading",
                 duration: 3000,
             });
@@ -166,11 +167,21 @@ const setApprove0 = async () => {
             toast({
                 title: `Création loading`,
                 description: `Nous inscrivons votre création de projet dans la blockchain...`,
+                className: "bg-orange-600 text-slate-950",
                 status: "loading",
                 duration: 3000,
             });
         }
-    }, [TXsetDataSuccess, TXsetDataError, TXsetDataLoading])
+        if (setDataError) {
+            toast({
+                title: `Erreur création projet`,
+                description:  setDataError.message,
+                status: "error",
+                className: "bg-red-600 text-slate-950",
+                duration: 3000,
+            });
+        }
+    }, [TXsetDataSuccess, TXsetDataError, TXsetDataLoading, setDataError])
 
 
 
@@ -185,7 +196,7 @@ const setApprove0 = async () => {
          <input
             type="text"
             onChange={handleChangeProjectDeadline}
-            placeholder="Date de rembousement"
+            placeholder="Durée prévisionnelle"
             className="p-2 border rounded mb-4 text-black mr-5 min-w-96"
         />
          <input

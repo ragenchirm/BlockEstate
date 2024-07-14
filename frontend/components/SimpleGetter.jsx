@@ -53,7 +53,7 @@ const SimpleGetter = ({ funcName, argsProp, label, refetchToggle, contract, chil
   }, [getData, getPending])
 
   return (
-    <div className="flex flex-col justify-between items-center p-5">
+    <div className="flex flex-col justify-between items-center">
       {getPending ? (
         <div>{`Chargement ${label}...`}</div>
       ) : (getError ?

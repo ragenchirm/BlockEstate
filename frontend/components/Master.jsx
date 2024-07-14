@@ -11,6 +11,7 @@ import SimpleSetter from "./SimpleSetter";
 import SimpleGetter from "./SimpleGetter";
 import SilenceGetter from "./SilenceGetter"
 import CreateProject from "./CreateProject"
+import Projects from "./Projects";
 
 
 
@@ -125,19 +126,19 @@ const Master = ({ userAddress, isConnected }) => {
                   <CreateProject refetch={refetchEverthing} bestFeeRate={feeRate} projectPriceInDol={projectPriceInDol} userAddress={userAddress} ></CreateProject>
 
           </div>}
-
-
-
-
-
-
-        {/* SILENCE GETTERS */}
-        <SilenceGetter funcName={hasRole} argsProp={[SUPER_ADMIN_ROLE, userAddress]} label={"Super Admin : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setSuperAdmin}></SilenceGetter>
+          <Projects refetchToggle={refetchToggle}></Projects>
+      
+      
+      
+      
+      </div>
+      
+      {/* SILENCE GETTERS */}
+      <SilenceGetter funcName={hasRole} argsProp={[SUPER_ADMIN_ROLE, userAddress]} label={"Super Admin : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setSuperAdmin}></SilenceGetter>
         <SilenceGetter funcName={hasRole} argsProp={[DEFAULT_ADMIN_ROLE, userAddress]} label={"Admin : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setDefaultAdmin}></SilenceGetter>
         <SilenceGetter funcName={hasRole} argsProp={[OPERATOR_ROLE, userAddress]} label={"Operateur : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setOperator}></SilenceGetter>
         <SilenceGetter funcName={hasRole} argsProp={[BLACKLIST_ROLE, userAddress]} label={"Blacklist : "} userAddress={userAddress} contract={MASTER} refetchToggle={refetchToggle} giveState={setBlacklist}></SilenceGetter>
         <SilenceGetter funcName={balanceOf} argsProp={[userAddress]} userAddress={userAddress} contract={STABLE} refetchToggle={refetchToggle} giveState={setUserUsBalance}>$</SilenceGetter >
-      </div>
       <AlertInfo chainId={chainId} />
     </div>
   );
