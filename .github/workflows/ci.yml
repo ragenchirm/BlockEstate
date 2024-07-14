@@ -34,6 +34,7 @@ jobs:
       - name: Run Tests
         run: npx hardhat test
         env:
+          SEPOLIA_HOLESKY_PRIVATE_KEY: ${{secrets.SEPOLIA_HOLESKY_PRIVATE_KEY}}
           IN_MAINNET_RPC_URL: ${{secrets.IN_MAINNET_RPC_URL}}
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
         working-directory: backend
