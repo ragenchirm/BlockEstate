@@ -51,7 +51,7 @@ const SimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labelPla
     const { isLoading: TXsetDataLoading, isSuccess: TXsetDataSuccess, error: TXsetDataError } = useWaitForTransactionReceipt({ hash: setDataHash });
 
     const handleSetData = async () => {
-        if (funcName == (investInProject || adminWithdraw || askForARefund || adminDeposit)) {
+        if (funcName ==  adminWithdraw || funcName == askForARefund ||funcName ==  adminDeposit || funcName == askForARefund) {
             await setData(newData * 1000000);
         } else if (funcName == (setFeeRate)) {
             await setData(newData * 100);

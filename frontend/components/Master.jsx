@@ -131,7 +131,8 @@ const Master = ({ userAddress, isConnected }) => {
           <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <CreateProject refetch={refetchEverything} bestFeeRate={feeRate} projectPriceInDol={projectPriceInDol} userAddress={userAddress} ></CreateProject>
-            </div></div>
+            </div>
+            </div>
         </>}
         <Projects refetch={refetchEverything} refetchToggle={refetchToggle} userAddress={userAddress}></Projects>
 

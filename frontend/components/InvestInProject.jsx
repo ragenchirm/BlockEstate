@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { contractMasterAbi, contractMasterAddress, contractStableAbi, contractProjectAbi, MASTER, PROJECT, STABLE, contractStableAddress, setProjectPriceInDollars, investInProject, adminWithdraw, askForARefund, adminDeposit, setFeeRate, createProject, approve} from "@/constants";
 
 
-const InvestInProject = ({ refetch, userAddress, projectAddress }) => {  
+const InvestInProject = ({ refetch, userAddress, projectAddress, funcName, label, labelPlaceHolder}) => {  
  
     const { toast } = useToast();
     let [newAmount, setNewAmount] = useState(0);
@@ -18,7 +18,7 @@ const InvestInProject = ({ refetch, userAddress, projectAddress }) => {
             writeSetData({
                 address: projectAddress,
                 abi: contractProjectAbi,
-                functionName: investInProject,
+                functionName: funcName,
                 args: [newAmount],
                 account: userAddress,
                 error: setDataError
@@ -177,7 +177,7 @@ const setApprove0 = async () => {
          <input
             type="text"
             onChange={handleChangeInvestedAmount}
-            placeholder="Montant à investir"
+            placeholder={`${labelPlaceHolder}`}
             className="p-2 border rounded mb-4 text-black mr-5 min-w-96"
         />
         <Button
@@ -185,7 +185,7 @@ const setApprove0 = async () => {
             onClick={handleSetApprove0}
             className="p-2 bg-blue-500 text-white rounded"
             disabled={TXsetDataLoading || newAmount == ""}>
-            {TXsetDataLoading || TXsetApproveLoading ? `Loading ` : `Investir`}
+            {TXsetDataLoading || TXsetApproveLoading ? `Loading ` : `${label}`}
         </Button>
     </>
     )

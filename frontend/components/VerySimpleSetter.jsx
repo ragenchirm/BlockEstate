@@ -2,10 +2,11 @@
 import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
 import { useEffect } from "react";
 import { useToast } from "./ui/use-toast";
+import { Button } from "./ui/button";
 import { contractMasterAbi, contractMasterAddress,contractStableAbi,contractProjectAbi, MASTER, PROJECT, STABLE, contractStableAddress, setProjectPriceInDollars, investInProject, adminWithdraw, askForARefund, adminDeposit, setFeeRate } from "@/constants";
 
 
-const VerySimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labelPlaceHolder, contractAdressProp, argsProp }) => {
+const VerySimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labelPlaceHolder, contractAdressProp, argsProp, disabledProp }) => {
     const { address } = useAccount();
     let abi = null, contractAddress = null;
     //set contract address and abi
@@ -37,6 +38,9 @@ const VerySimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labe
 
     const refetchEverything = async () => {
         await refetch();
+    };
+    const handleSetData = async () => {
+        await setData();
     };
 
 
@@ -73,12 +77,13 @@ const VerySimpleSetter = ({ refetch, funcName, contract, label, labelTitle, labe
 
     return (<>
         <div>{labelTitle}</div>
-        <button
+        <Button
+            variant="outline"
             onClick={handleSetData}
             className="p-2 bg-blue-500 text-white rounded"
-            disabled={TXsetDataLoading || newData == ""}>
+            disabled={disabledProp}>
             {TXsetDataLoading ? `Loading ${label}` : `${label}`}
-        </button>
+        </Button>
     </>
     )
 }
