@@ -24,7 +24,8 @@ module.exports = {
     hardhat: { //To fork maintnet
       forking: {
         url: MAINNET_RPC_URL,
-      }
+      },
+      blockGasLimit: 10000000
     }
   },
   gasReporter: {
