@@ -1,0 +1,60 @@
+
+======= backend/contracts/CalculateInterest.sol:CalculateInterest =======
+Developer Documentation
+{
+    "details": "All functions are pure and operate on provided parameters without modifying the state.",
+    "kind": "dev",
+    "methods": {
+        "calculateFee(uint256,uint256,uint256,uint256)": {
+            "params": {
+                "_feeRateIPB": "The fee rate in Index Basis Points (IPB)",
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The calculated fee"
+            }
+        },
+        "calculateInterestWithCompound(uint256,uint256,uint256)": {
+            "params": {
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The calculated compound interest"
+            }
+        },
+        "calculateRealInterest(uint256,uint256,uint256,uint256)": {
+            "params": {
+                "_feeRateIPB": "The fee rate in Index Basis Points (IPB)",
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The real interest earned after fees"
+            }
+        }
+    },
+    "title": "CalculateInterest Contract",
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {
+        "calculateFee(uint256,uint256,uint256,uint256)": {
+            "notice": "Calculates the fee based on the loan duration, amount invested, yearly interest, and fee rate"
+        },
+        "calculateInterestWithCompound(uint256,uint256,uint256)": {
+            "notice": "Calculates compound interest based on the loan duration, amount invested, and yearly interest"
+        },
+        "calculateRealInterest(uint256,uint256,uint256,uint256)": {
+            "notice": "Calculates the real interest earned after subtracting fees"
+        }
+    },
+    "notice": "This contract provides functions to calculate compound interest, fees, and real interest.",
+    "version": 1
+}
