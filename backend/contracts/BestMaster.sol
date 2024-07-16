@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.24;
 
-import "./../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
-import "./../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./BestProject.sol";
-import "./../node_modules/hardhat/console.sol";
+import "hardhat/console.sol";
 
 /// @title Block Estate Master Contract
 /// @author NoelNGA

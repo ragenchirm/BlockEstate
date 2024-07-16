@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.24;
 
-import "./../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./CalculateInterest.sol";
-import "./../node_modules/hardhat/console.sol";
+import "hardhat/console.sol";
 
 /// @title BestProject Contract
 /// @notice This contract represents a project where users can invest, request refunds, and claim funds with interest, and operators can withdraw funds and refund users with interests
