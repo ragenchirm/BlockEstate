@@ -1,0 +1,1268 @@
+
+======= backend/contracts/BestMaster.sol:BestMaster =======
+Developer Documentation
+{
+    "author": "NoelNGA",
+    "details": "This contract implements a factory of contracts BestProject, which will be created for each new project",
+    "errors": {
+        "AccessControlBadConfirmation()": [
+            {
+                "details": "The caller of a function is not the expected one. NOTE: Don't confuse with {AccessControlUnauthorizedAccount}."
+            }
+        ],
+        "AccessControlUnauthorizedAccount(address,bytes32)": [
+            {
+                "details": "The `account` is missing a role."
+            }
+        ],
+        "USDTTransferError(address,address,uint256)": [
+            {
+                "params": {
+                    "_amount": "The amount of USDT attempted to transfer",
+                    "_from": "The address from which the transfer was attempted",
+                    "_to": "The address to which the transfer was attempted"
+                }
+            }
+        ],
+        "UserBlacklistedError(address)": [
+            {
+                "params": {
+                    "_user": "The address of the blacklisted user"
+                }
+            }
+        ]
+    },
+    "events": {
+        "FundsWithdrawalByAdmin(address,uint256)": {
+            "params": {
+                "_amountInDollars": "The amount withdrawn in dollars",
+                "_operator": "The address of the admin performing the withdrawal"
+            }
+        },
+        "ProjectCreated(address,address)": {
+            "params": {
+                "_operator": "The address of the operator who created the project",
+                "_project": "The address of the newly created project"
+            }
+        },
+        "RoleAdminChanged(bytes32,bytes32,bytes32)": {
+            "details": "Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole` `DEFAULT_ADMIN_ROLE` is the starting admin for all roles, despite {RoleAdminChanged} not being emitted signaling this."
+        },
+        "RoleGranted(bytes32,address,address)": {
+            "details": "Emitted when `account` is granted `role`. `sender` is the account that originated the contract call, an admin role bearer except when using {AccessControl-_setupRole}."
+        },
+        "RoleRevoked(bytes32,address,address)": {
+            "details": "Emitted when `account` is revoked `role`. `sender` is the account that originated the contract call:   - if using `revokeRole`, it is the admin role bearer   - if using `renounceRole`, it is the role bearer (i.e. `account`)"
+        }
+    },
+    "kind": "dev",
+    "methods": {
+        "adminWithdraw(uint256)": {
+            "params": {
+                "_amount": "The amount to withdraw"
+            }
+        },
+        "constructor": {
+            "params": {
+                "_usdtContractAddress": "The address of the USDT contract"
+            }
+        },
+        "createProject(uint256,uint256,uint256,string,string)": {
+            "details": "This function uses the USDT transfer function to ensure the project price is paid",
+            "params": {
+                "_desc_link": "The link to the project description",
+                "_initialSupply": "The initial supply of tokens for the project",
+                "_interestRateIPB": "The interest rate in Index Basis Points (IPB) (for exemple 1% is written 100 and 10% is written 1000)",
+                "_projectDeadline": "The deadline for the project",
+                "_projectName": "The name of the project"
+            }
+        },
+        "getRoleAdmin(bytes32)": {
+            "details": "Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}."
+        },
+        "grantRole(bytes32,address)": {
+            "details": "Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role. May emit a {RoleGranted} event."
+        },
+        "hasRole(bytes32,address)": {
+            "details": "Returns `true` if `account` has been granted `role`."
+        },
+        "renounceRole(bytes32,address)": {
+            "details": "The caller cannot renounce the BLACKLIST_ROLE or SUPER_ADMIN_ROLE",
+            "params": {
+                "callerConfirmation": "The address of the caller to confirm",
+                "role": "The role to renounce"
+            }
+        },
+        "revokeRole(bytes32,address)": {
+            "details": "The caller cannot revoke their own SUPER_ADMIN_ROLE",
+            "params": {
+                "account": "The account from which to revoke the role",
+                "role": "The role to revoke"
+            }
+        },
+        "setFeeRate(uint256)": {
+            "params": {
+                "_feeRate": "The new fee rate in Index Basis Points (IPB)"
+            }
+        },
+        "setProjectPriceInDollars(uint256)": {
+            "params": {
+                "_projectPriceInDollars": "The new project price in dollars"
+            }
+        },
+        "supportsInterface(bytes4)": {
+            "details": "See {IERC165-supportsInterface}."
+        }
+    },
+    "stateVariables": {
+        "bestProjectsAddresses": {
+            "details": "This list might be removed in the future to use events instead, to avoid making the contract too heavy"
+        }
+    },
+    "title": "Block Estate Master Contract",
+    "version": 1
+}
+User Documentation
+{
+    "errors": {
+        "USDTTransferError(address,address,uint256)": [
+            {
+                "notice": "Thrown when a USDT transfer fails"
+            }
+        ],
+        "UserBlacklistedError(address)": [
+            {
+                "notice": "Thrown when a blacklisted user attempts to interact with the contract"
+            }
+        ]
+    },
+    "events": {
+        "FundsWithdrawalByAdmin(address,uint256)": {
+            "notice": "Emitted when funds are withdrawn by an admin"
+        },
+        "ProjectCreated(address,address)": {
+            "notice": "Emitted when a new project is created"
+        }
+    },
+    "kind": "user",
+    "methods": {
+        "adminWithdraw(uint256)": {
+            "notice": "Allows super admin to withdraw funds"
+        },
+        "bestFeeRateIPB()": {
+            "notice": "The fee rate of the contract, in Index Basis Points (IPB)"
+        },
+        "bestProjectsAddresses(uint256)": {
+            "notice": "List of created projects"
+        },
+        "constructor": {
+            "notice": "Initializes the contract with the USDT contract address and assigns roles to the contract deployer's address"
+        },
+        "createProject(uint256,uint256,uint256,string,string)": {
+            "notice": "Creates a new contract for a new gitproject"
+        },
+        "projectPriceInDollars()": {
+            "notice": "The price of a project in dollars"
+        },
+        "renounceRole(bytes32,address)": {
+            "notice": "Allows the caller to renounce their role"
+        },
+        "revokeRole(bytes32,address)": {
+            "notice": "Allows the admin to revoke a role from an account"
+        },
+        "setFeeRate(uint256)": {
+            "notice": "Sets the fee rate"
+        },
+        "setProjectPriceInDollars(uint256)": {
+            "notice": "Sets the price of a project in dollars"
+        },
+        "usdtContractAddress()": {
+            "notice": "The address of the USDT contract"
+        }
+    },
+    "notice": "best is used in variables naming as an acronym for Block Estate",
+    "version": 1
+}
+
+======= backend/contracts/BestProject.sol:BestProject =======
+Developer Documentation
+{
+    "details": "This contract uses OpenZeppelin's ERC20 and AccessControl libraries and extends CalculateInterest.",
+    "errors": {
+        "AccessControlBadConfirmation()": [
+            {
+                "details": "The caller of a function is not the expected one. NOTE: Don't confuse with {AccessControlUnauthorizedAccount}."
+            }
+        ],
+        "AccessControlUnauthorizedAccount(address,bytes32)": [
+            {
+                "details": "The `account` is missing a role."
+            }
+        ],
+        "ERC20InsufficientAllowance(address,uint256,uint256)": [
+            {
+                "details": "Indicates a failure with the `spender`\u2019s `allowance`. Used in transfers.",
+                "params": {
+                    "allowance": "Amount of tokens a `spender` is allowed to operate with.",
+                    "needed": "Minimum amount required to perform a transfer.",
+                    "spender": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ],
+        "ERC20InsufficientBalance(address,uint256,uint256)": [
+            {
+                "details": "Indicates an error related to the current `balance` of a `sender`. Used in transfers.",
+                "params": {
+                    "balance": "Current balance for the interacting account.",
+                    "needed": "Minimum amount required to perform a transfer.",
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidApprover(address)": [
+            {
+                "details": "Indicates a failure with the `approver` of a token to be approved. Used in approvals.",
+                "params": {
+                    "approver": "Address initiating an approval operation."
+                }
+            }
+        ],
+        "ERC20InvalidReceiver(address)": [
+            {
+                "details": "Indicates a failure with the token `receiver`. Used in transfers.",
+                "params": {
+                    "receiver": "Address to which tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidSender(address)": [
+            {
+                "details": "Indicates a failure with the token `sender`. Used in transfers.",
+                "params": {
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidSpender(address)": [
+            {
+                "details": "Indicates a failure with the `spender` to be approved. Used in approvals.",
+                "params": {
+                    "spender": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ],
+        "NotEnoughFundsError(address,uint256)": [
+            {
+                "params": {
+                    "_amount": "The attempted amount",
+                    "_user": "The address of the user"
+                }
+            }
+        ],
+        "ProjectNotRefundedError(uint256,uint256)": [
+            {
+                "params": {
+                    "_actualBalance": "The actual balance",
+                    "_minNecessaryBalance": "The minimum necessary balance for refund"
+                }
+            }
+        ],
+        "TooMuchError(uint256,uint256)": [
+            {
+                "params": {
+                    "_amount": "The attempted amount",
+                    "_contractBalance": "The contract's current balance"
+                }
+            }
+        ],
+        "USDTTransferError(address,address,uint256)": [
+            {
+                "params": {
+                    "_amount": "The amount of USDT attempted to transfer",
+                    "_from": "The address from which the transfer was attempted",
+                    "_to": "The address to which the transfer was attempted"
+                }
+            }
+        ],
+        "UserBlacklistedError(address)": [
+            {
+                "params": {
+                    "_user": "The address of the blacklisted user"
+                }
+            }
+        ],
+        "WithdrawalIsTooBigError(uint256,uint256)": [
+            {
+                "params": {
+                    "_amount": "The attempted withdrawal amount",
+                    "_maxWithdrawal": "The maximum allowable withdrawal amount"
+                }
+            }
+        ],
+        "WrongProjectStatusError(uint256)": [
+            {
+                "params": {
+                    "_actualStatusActual": "The actual status of the project"
+                }
+            }
+        ]
+    },
+    "events": {
+        "Approval(address,address,uint256)": {
+            "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `value` is the new allowance."
+        },
+        "FundsDepositedByAdmin(address,uint256)": {
+            "params": {
+                "_amount": "The amount deposited",
+                "_operator": "The address of the admin"
+            }
+        },
+        "FundsWithdrawalByAdmin(address,uint256)": {
+            "params": {
+                "_amountInDollars": "The amount withdrawn in dollars",
+                "_operator": "The address of the admin"
+            }
+        },
+        "ProjectStatusChange(uint256,uint256)": {
+            "params": {
+                "_from": "The previous status",
+                "_to": "The new status"
+            }
+        },
+        "RoleAdminChanged(bytes32,bytes32,bytes32)": {
+            "details": "Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole` `DEFAULT_ADMIN_ROLE` is the starting admin for all roles, despite {RoleAdminChanged} not being emitted signaling this."
+        },
+        "RoleGranted(bytes32,address,address)": {
+            "details": "Emitted when `account` is granted `role`. `sender` is the account that originated the contract call, an admin role bearer except when using {AccessControl-_setupRole}."
+        },
+        "RoleRevoked(bytes32,address,address)": {
+            "details": "Emitted when `account` is revoked `role`. `sender` is the account that originated the contract call:   - if using `revokeRole`, it is the admin role bearer   - if using `renounceRole`, it is the role bearer (i.e. `account`)"
+        },
+        "Transfer(address,address,uint256)": {
+            "details": "Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero."
+        },
+        "UserAskedForARefund(address,uint256)": {
+            "params": {
+                "_amountInDollars": "The amount requested for refund in dollars",
+                "_investor": "The address of the investor"
+            }
+        },
+        "UserClaimedFunds(address,uint256)": {
+            "params": {
+                "_fundClaimed": "The amount of funds claimed",
+                "_user": "The address of the user"
+            }
+        },
+        "UserInvested(address,uint256)": {
+            "params": {
+                "_amountInDollars": "The amount invested in dollars",
+                "_investor": "The address of the investor"
+            }
+        }
+    },
+    "kind": "dev",
+    "methods": {
+        "adminDeposit(uint256)": {
+            "params": {
+                "_amount": "The amount to deposit"
+            }
+        },
+        "adminWithdraw(uint256)": {
+            "params": {
+                "_amount": "The amount to withdraw"
+            }
+        },
+        "allowance(address,address)": {
+            "details": "See {IERC20-allowance}."
+        },
+        "approve(address,uint256)": {
+            "details": "See {IERC20-approve}. NOTE: If `value` is the maximum `uint256`, the allowance is not updated on `transferFrom`. This is semantically equivalent to an infinite approval. Requirements: - `spender` cannot be the zero address."
+        },
+        "askForARefund(uint256)": {
+            "params": {
+                "_amount": "The amount to refund"
+            }
+        },
+        "balanceOf(address)": {
+            "details": "See {IERC20-balanceOf}."
+        },
+        "calculateFee(uint256,uint256,uint256,uint256)": {
+            "params": {
+                "_feeRateIPB": "The fee rate in Index Basis Points (IPB)",
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The calculated fee"
+            }
+        },
+        "calculateInterestWithCompound(uint256,uint256,uint256)": {
+            "params": {
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The calculated compound interest"
+            }
+        },
+        "calculateRealInterest(uint256,uint256,uint256,uint256)": {
+            "params": {
+                "_feeRateIPB": "The fee rate in Index Basis Points (IPB)",
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The real interest earned after fees"
+            }
+        },
+        "constructor": {
+            "params": {
+                "_bestFeeRateIPB": "The fee rate in Index Basis Points (IPB)",
+                "_desc_link": "The link to the project description",
+                "_initialSupply": "The initial supply of tokens",
+                "_interestRateIPB": "The interest rate in Index Basis Points (IPB)",
+                "_masterContractAddress": "The address of the master contract",
+                "_projectCreator": "The address of the project creator",
+                "_projectDeadline": "The deadline for the project",
+                "_projectName": "The name of the project",
+                "_usdtContractAddress": "The address of the USDT contract"
+            }
+        },
+        "decimals()": {
+            "returns": {
+                "_0": "The number of decimals"
+            }
+        },
+        "getRoleAdmin(bytes32)": {
+            "details": "Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}."
+        },
+        "grantRole(bytes32,address)": {
+            "details": "Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role. May emit a {RoleGranted} event."
+        },
+        "hasRole(bytes32,address)": {
+            "details": "Returns `true` if `account` has been granted `role`."
+        },
+        "investInProject(uint256)": {
+            "details": "Project is launched automatically when fully funded",
+            "params": {
+                "_amount": "The amount to invest"
+            }
+        },
+        "name()": {
+            "details": "Returns the name of the token."
+        },
+        "renounceRole(bytes32,address)": {
+            "details": "Prevents roles from being renounced",
+            "params": {
+                "callerConfirmation": "The address of the caller to confirm",
+                "role": "The role to renounce"
+            }
+        },
+        "revokeRole(bytes32,address)": {
+            "details": "Allows an admin to revoke a role from an account",
+            "params": {
+                "account": "The account from which to revoke the role",
+                "role": "The role to revoke"
+            }
+        },
+        "supportsInterface(bytes4)": {
+            "details": "See {IERC165-supportsInterface}."
+        },
+        "symbol()": {
+            "details": "Returns the symbol of the token, usually a shorter version of the name."
+        },
+        "totalAmountWithInterest()": {
+            "returns": {
+                "_0": "The total amount with interest"
+            }
+        },
+        "totalSupply()": {
+            "details": "See {IERC20-totalSupply}."
+        },
+        "transfer(address,uint256)": {
+            "details": "See {IERC20-transfer}. Requirements: - `to` cannot be the zero address. - the caller must have a balance of at least `value`."
+        },
+        "transferFrom(address,address,uint256)": {
+            "details": "See {IERC20-transferFrom}. Emits an {Approval} event indicating the updated allowance. This is not required by the EIP. See the note at the beginning of {ERC20}. NOTE: Does not update the allowance if the current allowance is the maximum `uint256`. Requirements: - `from` and `to` cannot be the zero address. - `from` must have a balance of at least `value`. - the caller must have allowance for ``from``'s tokens of at least `value`."
+        }
+    },
+    "title": "BestProject Contract",
+    "version": 1
+}
+User Documentation
+{
+    "errors": {
+        "NotEnoughFundsError(address,uint256)": [
+            {
+                "notice": "Thrown when a user does not have enough funds for the operation"
+            }
+        ],
+        "ProjectNotRefundedError(uint256,uint256)": [
+            {
+                "notice": "Thrown when the project is not fully refunded"
+            }
+        ],
+        "TooMuchError(uint256,uint256)": [
+            {
+                "notice": "Thrown when the amount exceeds the contract balance"
+            }
+        ],
+        "USDTTransferError(address,address,uint256)": [
+            {
+                "notice": "Thrown when a USDT transfer fails"
+            }
+        ],
+        "UserBlacklistedError(address)": [
+            {
+                "notice": "Thrown when a blacklisted user attempts to interact with the contract"
+            }
+        ],
+        "WithdrawalIsTooBigError(uint256,uint256)": [
+            {
+                "notice": "Thrown when a withdrawal amount is too large"
+            }
+        ],
+        "WrongProjectStatusError(uint256)": [
+            {
+                "notice": "Thrown when the project status is incorrect for the operation"
+            }
+        ]
+    },
+    "events": {
+        "FundsDepositedByAdmin(address,uint256)": {
+            "notice": "Emitted when an admin deposits funds"
+        },
+        "FundsWithdrawalByAdmin(address,uint256)": {
+            "notice": "Emitted when an admin withdraws funds"
+        },
+        "ProjectStatusChange(uint256,uint256)": {
+            "notice": "Emitted when the project status changes"
+        },
+        "UserAskedForARefund(address,uint256)": {
+            "notice": "Emitted when a user requests a refund"
+        },
+        "UserClaimedFunds(address,uint256)": {
+            "notice": "Emitted when a user claims their funds with interest"
+        },
+        "UserInvested(address,uint256)": {
+            "notice": "Emitted when a user invests in the project"
+        }
+    },
+    "kind": "user",
+    "methods": {
+        "adminDeposit(uint256)": {
+            "notice": "Allows an admin to deposit funds"
+        },
+        "adminWithdraw(uint256)": {
+            "notice": "Allows an admin to withdraw funds when project is launched"
+        },
+        "askForARefund(uint256)": {
+            "notice": "Allows a user to request a refund if project not launched yet"
+        },
+        "calculateFee(uint256,uint256,uint256,uint256)": {
+            "notice": "Calculates the fee based on the loan duration, amount invested, yearly interest, and fee rate"
+        },
+        "calculateInterestWithCompound(uint256,uint256,uint256)": {
+            "notice": "Calculates compound interest based on the loan duration, amount invested, and yearly interest"
+        },
+        "calculateRealInterest(uint256,uint256,uint256,uint256)": {
+            "notice": "Calculates the real interest earned after subtracting fees"
+        },
+        "claimFundsWithInterest()": {
+            "notice": "Allows a user to claim their funds with interest, when project is finished"
+        },
+        "constructor": {
+            "notice": "Constructor to initialize the contract with necessary parameters"
+        },
+        "decimals()": {
+            "notice": "Returns the number of decimals used to get its user representation."
+        },
+        "finishProject()": {
+            "notice": "Allows an admin to finish the project"
+        },
+        "investInProject(uint256)": {
+            "notice": "Allows a user to invest in the project"
+        },
+        "renounceRole(bytes32,address)": {
+            "notice": "This contract has two role, DEFAULT_ADMIN_ROLE for the operators and BLACK_LIST_ROLE. We don't want any of those roles to be renounceables."
+        },
+        "totalAmountWithInterest()": {
+            "notice": "Returns the total amount with interest"
+        }
+    },
+    "notice": "This contract represents a project where users can invest, request refunds, and claim funds with interest, and operators can withdraw funds and refund users with interests",
+    "version": 1
+}
+
+======= backend/contracts/CalculateInterest.sol:CalculateInterest =======
+Developer Documentation
+{
+    "details": "All functions are pure and operate on provided parameters without modifying the state.",
+    "kind": "dev",
+    "methods": {
+        "calculateFee(uint256,uint256,uint256,uint256)": {
+            "params": {
+                "_feeRateIPB": "The fee rate in Index Basis Points (IPB)",
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The calculated fee"
+            }
+        },
+        "calculateInterestWithCompound(uint256,uint256,uint256)": {
+            "params": {
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The calculated compound interest"
+            }
+        },
+        "calculateRealInterest(uint256,uint256,uint256,uint256)": {
+            "params": {
+                "_feeRateIPB": "The fee rate in Index Basis Points (IPB)",
+                "_investedAmount": "The amount invested",
+                "_loanDurationInDays": "The duration of the loan in days",
+                "_yearlyInterestIPB": "The yearly interest rate in Index Basis Points (IPB)"
+            },
+            "returns": {
+                "_0": "The real interest earned after fees"
+            }
+        }
+    },
+    "title": "CalculateInterest Contract",
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {
+        "calculateFee(uint256,uint256,uint256,uint256)": {
+            "notice": "Calculates the fee based on the loan duration, amount invested, yearly interest, and fee rate"
+        },
+        "calculateInterestWithCompound(uint256,uint256,uint256)": {
+            "notice": "Calculates compound interest based on the loan duration, amount invested, and yearly interest"
+        },
+        "calculateRealInterest(uint256,uint256,uint256,uint256)": {
+            "notice": "Calculates the real interest earned after subtracting fees"
+        }
+    },
+    "notice": "This contract provides functions to calculate compound interest, fees, and real interest.",
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/access/AccessControl.sol:AccessControl =======
+Developer Documentation
+{
+    "details": "Contract module that allows children to implement role-based access control mechanisms. This is a lightweight version that doesn't allow enumerating role members except through off-chain means by accessing the contract event logs. Some applications may benefit from on-chain enumerability, for those cases see {AccessControlEnumerable}. Roles are referred to by their `bytes32` identifier. These should be exposed in the external API and be unique. The best way to achieve this is by using `public constant` hash digests: ```solidity bytes32 public constant MY_ROLE = keccak256(\"MY_ROLE\"); ``` Roles can be used to represent a set of permissions. To restrict access to a function call, use {hasRole}: ```solidity function foo() public {     require(hasRole(MY_ROLE, msg.sender));     ... } ``` Roles can be granted and revoked dynamically via the {grantRole} and {revokeRole} functions. Each role has an associated admin role, and only accounts that have a role's admin role can call {grantRole} and {revokeRole}. By default, the admin role for all roles is `DEFAULT_ADMIN_ROLE`, which means that only accounts with this role will be able to grant or revoke other roles. More complex role relationships can be created by using {_setRoleAdmin}. WARNING: The `DEFAULT_ADMIN_ROLE` is also its own admin: it has permission to grant and revoke this role. Extra precautions should be taken to secure accounts that have been granted it. We recommend using {AccessControlDefaultAdminRules} to enforce additional security measures for this role.",
+    "errors": {
+        "AccessControlBadConfirmation()": [
+            {
+                "details": "The caller of a function is not the expected one. NOTE: Don't confuse with {AccessControlUnauthorizedAccount}."
+            }
+        ],
+        "AccessControlUnauthorizedAccount(address,bytes32)": [
+            {
+                "details": "The `account` is missing a role."
+            }
+        ]
+    },
+    "events": {
+        "RoleAdminChanged(bytes32,bytes32,bytes32)": {
+            "details": "Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole` `DEFAULT_ADMIN_ROLE` is the starting admin for all roles, despite {RoleAdminChanged} not being emitted signaling this."
+        },
+        "RoleGranted(bytes32,address,address)": {
+            "details": "Emitted when `account` is granted `role`. `sender` is the account that originated the contract call, an admin role bearer except when using {AccessControl-_setupRole}."
+        },
+        "RoleRevoked(bytes32,address,address)": {
+            "details": "Emitted when `account` is revoked `role`. `sender` is the account that originated the contract call:   - if using `revokeRole`, it is the admin role bearer   - if using `renounceRole`, it is the role bearer (i.e. `account`)"
+        }
+    },
+    "kind": "dev",
+    "methods": {
+        "getRoleAdmin(bytes32)": {
+            "details": "Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}."
+        },
+        "grantRole(bytes32,address)": {
+            "details": "Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role. May emit a {RoleGranted} event."
+        },
+        "hasRole(bytes32,address)": {
+            "details": "Returns `true` if `account` has been granted `role`."
+        },
+        "renounceRole(bytes32,address)": {
+            "details": "Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been revoked `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `callerConfirmation`. May emit a {RoleRevoked} event."
+        },
+        "revokeRole(bytes32,address)": {
+            "details": "Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role. May emit a {RoleRevoked} event."
+        },
+        "supportsInterface(bytes4)": {
+            "details": "See {IERC165-supportsInterface}."
+        }
+    },
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/access/IAccessControl.sol:IAccessControl =======
+Developer Documentation
+{
+    "details": "External interface of AccessControl declared to support ERC165 detection.",
+    "errors": {
+        "AccessControlBadConfirmation()": [
+            {
+                "details": "The caller of a function is not the expected one. NOTE: Don't confuse with {AccessControlUnauthorizedAccount}."
+            }
+        ],
+        "AccessControlUnauthorizedAccount(address,bytes32)": [
+            {
+                "details": "The `account` is missing a role."
+            }
+        ]
+    },
+    "events": {
+        "RoleAdminChanged(bytes32,bytes32,bytes32)": {
+            "details": "Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole` `DEFAULT_ADMIN_ROLE` is the starting admin for all roles, despite {RoleAdminChanged} not being emitted signaling this."
+        },
+        "RoleGranted(bytes32,address,address)": {
+            "details": "Emitted when `account` is granted `role`. `sender` is the account that originated the contract call, an admin role bearer except when using {AccessControl-_setupRole}."
+        },
+        "RoleRevoked(bytes32,address,address)": {
+            "details": "Emitted when `account` is revoked `role`. `sender` is the account that originated the contract call:   - if using `revokeRole`, it is the admin role bearer   - if using `renounceRole`, it is the role bearer (i.e. `account`)"
+        }
+    },
+    "kind": "dev",
+    "methods": {
+        "getRoleAdmin(bytes32)": {
+            "details": "Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {AccessControl-_setRoleAdmin}."
+        },
+        "grantRole(bytes32,address)": {
+            "details": "Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role."
+        },
+        "hasRole(bytes32,address)": {
+            "details": "Returns `true` if `account` has been granted `role`."
+        },
+        "renounceRole(bytes32,address)": {
+            "details": "Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `callerConfirmation`."
+        },
+        "revokeRole(bytes32,address)": {
+            "details": "Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role."
+        }
+    },
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol:IERC1155Errors =======
+Developer Documentation
+{
+    "details": "Standard ERC1155 Errors Interface of the https://eips.ethereum.org/EIPS/eip-6093[ERC-6093] custom errors for ERC1155 tokens.",
+    "errors": {
+        "ERC1155InsufficientBalance(address,uint256,uint256,uint256)": [
+            {
+                "details": "Indicates an error related to the current `balance` of a `sender`. Used in transfers.",
+                "params": {
+                    "balance": "Current balance for the interacting account.",
+                    "needed": "Minimum amount required to perform a transfer.",
+                    "sender": "Address whose tokens are being transferred.",
+                    "tokenId": "Identifier number of a token."
+                }
+            }
+        ],
+        "ERC1155InvalidApprover(address)": [
+            {
+                "details": "Indicates a failure with the `approver` of a token to be approved. Used in approvals.",
+                "params": {
+                    "approver": "Address initiating an approval operation."
+                }
+            }
+        ],
+        "ERC1155InvalidArrayLength(uint256,uint256)": [
+            {
+                "details": "Indicates an array length mismatch between ids and values in a safeBatchTransferFrom operation. Used in batch transfers.",
+                "params": {
+                    "idsLength": "Length of the array of token identifiers",
+                    "valuesLength": "Length of the array of token amounts"
+                }
+            }
+        ],
+        "ERC1155InvalidOperator(address)": [
+            {
+                "details": "Indicates a failure with the `operator` to be approved. Used in approvals.",
+                "params": {
+                    "operator": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ],
+        "ERC1155InvalidReceiver(address)": [
+            {
+                "details": "Indicates a failure with the token `receiver`. Used in transfers.",
+                "params": {
+                    "receiver": "Address to which tokens are being transferred."
+                }
+            }
+        ],
+        "ERC1155InvalidSender(address)": [
+            {
+                "details": "Indicates a failure with the token `sender`. Used in transfers.",
+                "params": {
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC1155MissingApprovalForAll(address,address)": [
+            {
+                "details": "Indicates a failure with the `operator`\u2019s approval. Used in transfers.",
+                "params": {
+                    "operator": "Address that may be allowed to operate on tokens without being their owner.",
+                    "owner": "Address of the current owner of a token."
+                }
+            }
+        ]
+    },
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol:IERC20Errors =======
+Developer Documentation
+{
+    "details": "Standard ERC20 Errors Interface of the https://eips.ethereum.org/EIPS/eip-6093[ERC-6093] custom errors for ERC20 tokens.",
+    "errors": {
+        "ERC20InsufficientAllowance(address,uint256,uint256)": [
+            {
+                "details": "Indicates a failure with the `spender`\u2019s `allowance`. Used in transfers.",
+                "params": {
+                    "allowance": "Amount of tokens a `spender` is allowed to operate with.",
+                    "needed": "Minimum amount required to perform a transfer.",
+                    "spender": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ],
+        "ERC20InsufficientBalance(address,uint256,uint256)": [
+            {
+                "details": "Indicates an error related to the current `balance` of a `sender`. Used in transfers.",
+                "params": {
+                    "balance": "Current balance for the interacting account.",
+                    "needed": "Minimum amount required to perform a transfer.",
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidApprover(address)": [
+            {
+                "details": "Indicates a failure with the `approver` of a token to be approved. Used in approvals.",
+                "params": {
+                    "approver": "Address initiating an approval operation."
+                }
+            }
+        ],
+        "ERC20InvalidReceiver(address)": [
+            {
+                "details": "Indicates a failure with the token `receiver`. Used in transfers.",
+                "params": {
+                    "receiver": "Address to which tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidSender(address)": [
+            {
+                "details": "Indicates a failure with the token `sender`. Used in transfers.",
+                "params": {
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidSpender(address)": [
+            {
+                "details": "Indicates a failure with the `spender` to be approved. Used in approvals.",
+                "params": {
+                    "spender": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ]
+    },
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol:IERC721Errors =======
+Developer Documentation
+{
+    "details": "Standard ERC721 Errors Interface of the https://eips.ethereum.org/EIPS/eip-6093[ERC-6093] custom errors for ERC721 tokens.",
+    "errors": {
+        "ERC721IncorrectOwner(address,uint256,address)": [
+            {
+                "details": "Indicates an error related to the ownership over a particular token. Used in transfers.",
+                "params": {
+                    "owner": "Address of the current owner of a token.",
+                    "sender": "Address whose tokens are being transferred.",
+                    "tokenId": "Identifier number of a token."
+                }
+            }
+        ],
+        "ERC721InsufficientApproval(address,uint256)": [
+            {
+                "details": "Indicates a failure with the `operator`\u2019s approval. Used in transfers.",
+                "params": {
+                    "operator": "Address that may be allowed to operate on tokens without being their owner.",
+                    "tokenId": "Identifier number of a token."
+                }
+            }
+        ],
+        "ERC721InvalidApprover(address)": [
+            {
+                "details": "Indicates a failure with the `approver` of a token to be approved. Used in approvals.",
+                "params": {
+                    "approver": "Address initiating an approval operation."
+                }
+            }
+        ],
+        "ERC721InvalidOperator(address)": [
+            {
+                "details": "Indicates a failure with the `operator` to be approved. Used in approvals.",
+                "params": {
+                    "operator": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ],
+        "ERC721InvalidOwner(address)": [
+            {
+                "details": "Indicates that an address can't be an owner. For example, `address(0)` is a forbidden owner in EIP-20. Used in balance queries.",
+                "params": {
+                    "owner": "Address of the current owner of a token."
+                }
+            }
+        ],
+        "ERC721InvalidReceiver(address)": [
+            {
+                "details": "Indicates a failure with the token `receiver`. Used in transfers.",
+                "params": {
+                    "receiver": "Address to which tokens are being transferred."
+                }
+            }
+        ],
+        "ERC721InvalidSender(address)": [
+            {
+                "details": "Indicates a failure with the token `sender`. Used in transfers.",
+                "params": {
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC721NonexistentToken(uint256)": [
+            {
+                "details": "Indicates a `tokenId` whose `owner` is the zero address.",
+                "params": {
+                    "tokenId": "Identifier number of a token."
+                }
+            }
+        ]
+    },
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20 =======
+Developer Documentation
+{
+    "details": "Implementation of the {IERC20} interface. This implementation is agnostic to the way tokens are created. This means that a supply mechanism has to be added in a derived contract using {_mint}. TIP: For a detailed writeup see our guide https://forum.openzeppelin.com/t/how-to-implement-erc20-supply-mechanisms/226[How to implement supply mechanisms]. The default value of {decimals} is 18. To change this, you should override this function so it returns a different value. We have followed general OpenZeppelin Contracts guidelines: functions revert instead returning `false` on failure. This behavior is nonetheless conventional and does not conflict with the expectations of ERC20 applications. Additionally, an {Approval} event is emitted on calls to {transferFrom}. This allows applications to reconstruct the allowance for all accounts just by listening to said events. Other implementations of the EIP may not emit these events, as it isn't required by the specification.",
+    "errors": {
+        "ERC20InsufficientAllowance(address,uint256,uint256)": [
+            {
+                "details": "Indicates a failure with the `spender`\u2019s `allowance`. Used in transfers.",
+                "params": {
+                    "allowance": "Amount of tokens a `spender` is allowed to operate with.",
+                    "needed": "Minimum amount required to perform a transfer.",
+                    "spender": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ],
+        "ERC20InsufficientBalance(address,uint256,uint256)": [
+            {
+                "details": "Indicates an error related to the current `balance` of a `sender`. Used in transfers.",
+                "params": {
+                    "balance": "Current balance for the interacting account.",
+                    "needed": "Minimum amount required to perform a transfer.",
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidApprover(address)": [
+            {
+                "details": "Indicates a failure with the `approver` of a token to be approved. Used in approvals.",
+                "params": {
+                    "approver": "Address initiating an approval operation."
+                }
+            }
+        ],
+        "ERC20InvalidReceiver(address)": [
+            {
+                "details": "Indicates a failure with the token `receiver`. Used in transfers.",
+                "params": {
+                    "receiver": "Address to which tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidSender(address)": [
+            {
+                "details": "Indicates a failure with the token `sender`. Used in transfers.",
+                "params": {
+                    "sender": "Address whose tokens are being transferred."
+                }
+            }
+        ],
+        "ERC20InvalidSpender(address)": [
+            {
+                "details": "Indicates a failure with the `spender` to be approved. Used in approvals.",
+                "params": {
+                    "spender": "Address that may be allowed to operate on tokens without being their owner."
+                }
+            }
+        ]
+    },
+    "events": {
+        "Approval(address,address,uint256)": {
+            "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `value` is the new allowance."
+        },
+        "Transfer(address,address,uint256)": {
+            "details": "Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero."
+        }
+    },
+    "kind": "dev",
+    "methods": {
+        "allowance(address,address)": {
+            "details": "See {IERC20-allowance}."
+        },
+        "approve(address,uint256)": {
+            "details": "See {IERC20-approve}. NOTE: If `value` is the maximum `uint256`, the allowance is not updated on `transferFrom`. This is semantically equivalent to an infinite approval. Requirements: - `spender` cannot be the zero address."
+        },
+        "balanceOf(address)": {
+            "details": "See {IERC20-balanceOf}."
+        },
+        "constructor": {
+            "details": "Sets the values for {name} and {symbol}. All two of these values are immutable: they can only be set once during construction."
+        },
+        "decimals()": {
+            "details": "Returns the number of decimals used to get its user representation. For example, if `decimals` equals `2`, a balance of `505` tokens should be displayed to a user as `5.05` (`505 / 10 ** 2`). Tokens usually opt for a value of 18, imitating the relationship between Ether and Wei. This is the default value returned by this function, unless it's overridden. NOTE: This information is only used for _display_ purposes: it in no way affects any of the arithmetic of the contract, including {IERC20-balanceOf} and {IERC20-transfer}."
+        },
+        "name()": {
+            "details": "Returns the name of the token."
+        },
+        "symbol()": {
+            "details": "Returns the symbol of the token, usually a shorter version of the name."
+        },
+        "totalSupply()": {
+            "details": "See {IERC20-totalSupply}."
+        },
+        "transfer(address,uint256)": {
+            "details": "See {IERC20-transfer}. Requirements: - `to` cannot be the zero address. - the caller must have a balance of at least `value`."
+        },
+        "transferFrom(address,address,uint256)": {
+            "details": "See {IERC20-transferFrom}. Emits an {Approval} event indicating the updated allowance. This is not required by the EIP. See the note at the beginning of {ERC20}. NOTE: Does not update the allowance if the current allowance is the maximum `uint256`. Requirements: - `from` and `to` cannot be the zero address. - `from` must have a balance of at least `value`. - the caller must have allowance for ``from``'s tokens of at least `value`."
+        }
+    },
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20 =======
+Developer Documentation
+{
+    "details": "Interface of the ERC20 standard as defined in the EIP.",
+    "events": {
+        "Approval(address,address,uint256)": {
+            "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `value` is the new allowance."
+        },
+        "Transfer(address,address,uint256)": {
+            "details": "Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero."
+        }
+    },
+    "kind": "dev",
+    "methods": {
+        "allowance(address,address)": {
+            "details": "Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner` through {transferFrom}. This is zero by default. This value changes when {approve} or {transferFrom} are called."
+        },
+        "approve(address,uint256)": {
+            "details": "Sets a `value` amount of tokens as the allowance of `spender` over the caller's tokens. Returns a boolean value indicating whether the operation succeeded. IMPORTANT: Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729 Emits an {Approval} event."
+        },
+        "balanceOf(address)": {
+            "details": "Returns the value of tokens owned by `account`."
+        },
+        "totalSupply()": {
+            "details": "Returns the value of tokens in existence."
+        },
+        "transfer(address,uint256)": {
+            "details": "Moves a `value` amount of tokens from the caller's account to `to`. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
+        },
+        "transferFrom(address,address,uint256)": {
+            "details": "Moves a `value` amount of tokens from `from` to `to` using the allowance mechanism. `value` is then deducted from the caller's allowance. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
+        }
+    },
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol:IERC20Metadata =======
+Developer Documentation
+{
+    "details": "Interface for the optional metadata functions from the ERC20 standard.",
+    "events": {
+        "Approval(address,address,uint256)": {
+            "details": "Emitted when the allowance of a `spender` for an `owner` is set by a call to {approve}. `value` is the new allowance."
+        },
+        "Transfer(address,address,uint256)": {
+            "details": "Emitted when `value` tokens are moved from one account (`from`) to another (`to`). Note that `value` may be zero."
+        }
+    },
+    "kind": "dev",
+    "methods": {
+        "allowance(address,address)": {
+            "details": "Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner` through {transferFrom}. This is zero by default. This value changes when {approve} or {transferFrom} are called."
+        },
+        "approve(address,uint256)": {
+            "details": "Sets a `value` amount of tokens as the allowance of `spender` over the caller's tokens. Returns a boolean value indicating whether the operation succeeded. IMPORTANT: Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729 Emits an {Approval} event."
+        },
+        "balanceOf(address)": {
+            "details": "Returns the value of tokens owned by `account`."
+        },
+        "decimals()": {
+            "details": "Returns the decimals places of the token."
+        },
+        "name()": {
+            "details": "Returns the name of the token."
+        },
+        "symbol()": {
+            "details": "Returns the symbol of the token."
+        },
+        "totalSupply()": {
+            "details": "Returns the value of tokens in existence."
+        },
+        "transfer(address,uint256)": {
+            "details": "Moves a `value` amount of tokens from the caller's account to `to`. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
+        },
+        "transferFrom(address,address,uint256)": {
+            "details": "Moves a `value` amount of tokens from `from` to `to` using the allowance mechanism. `value` is then deducted from the caller's allowance. Returns a boolean value indicating whether the operation succeeded. Emits a {Transfer} event."
+        }
+    },
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/utils/Context.sol:Context =======
+Developer Documentation
+{
+    "details": "Provides information about the current execution context, including the sender of the transaction and its data. While these are generally available via msg.sender and msg.data, they should not be accessed in such a direct manner, since when dealing with meta-transactions the account sending and paying for execution may not be the actual sender (as far as an application is concerned). This contract is only required for intermediate, library-like contracts.",
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol:ERC165 =======
+Developer Documentation
+{
+    "details": "Implementation of the {IERC165} interface. Contracts that want to implement ERC165 should inherit from this contract and override {supportsInterface} to check for the additional interface id that will be supported. For example: ```solidity function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {     return interfaceId == type(MyInterface).interfaceId || super.supportsInterface(interfaceId); } ```",
+    "kind": "dev",
+    "methods": {
+        "supportsInterface(bytes4)": {
+            "details": "See {IERC165-supportsInterface}."
+        }
+    },
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol:IERC165 =======
+Developer Documentation
+{
+    "details": "Interface of the ERC165 standard, as defined in the https://eips.ethereum.org/EIPS/eip-165[EIP]. Implementers can declare support of contract interfaces, which can then be queried by others ({ERC165Checker}). For an implementation, see {ERC165}.",
+    "kind": "dev",
+    "methods": {
+        "supportsInterface(bytes4)": {
+            "details": "Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created. This function call must use less than 30 000 gas."
+        }
+    },
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
+
+======= backend/node_modules/hardhat/console.sol:console =======
+Developer Documentation
+{
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+}
+User Documentation
+{
+    "kind": "user",
+    "methods": {},
+    "version": 1
+}
